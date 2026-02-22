@@ -2,10 +2,8 @@
 bin/
 *.class
 
-# Eclipse
+# Eclipse config local
 .settings/
-.project
-.classpath
 
 # Logs
 *.log
@@ -13,3 +11,4 @@ bin/
 # Sistema
 .DS_Store
 Thumbs.db
+data/*.db
