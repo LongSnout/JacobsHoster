@@ -1,0 +1,45 @@
+
+
+//Login Screen Styles
+
+//login background
+.login-root {
+  -fx-background-image: url("../images/login_bg.png");
+  -fx-background-size: cover;
+  -fx-background-position: 50% 50%;
+  -fx-background-repeat: no-repeat;
+}
+
+//login box
+.login-box {
+  -fx-background-color: rgba(10, 50, 128, 0.4);
+  -fx-padding: 20;
+  -fx-background-radius: 10;
+}
+
+//Login enter button
+
+.login-box .button {
+    -fx-background-color: rgba(176, 225, 160, 1.0);
+    -fx-text-fill: rgba(11, 63, 51, 1.0);
+    -fx-font-weight: bold;
+    -fx-background-radius: 8;
+    -fx-cursor: hand;
+}
+
+.login-box .button:hover {
+    -fx-background-color: rgba(139, 205, 149, 1.0);
+}
+
+.login-box .button:pressed {
+    -fx-background-color: rgba(121, 192, 150, 1.0);
+}
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.LoginController">
+   <children>
+      <Pane prefHeight="200.0" prefWidth="200.0" styleClass="login-root" stylesheets="@styles/app.css" StackPane.alignment="CENTER">
+         <children>
+            <VBox alignment="TOP_CENTER" layoutX="180.0" layoutY="41.0" prefHeight="200.0" prefWidth="100.0" spacing="15.0" styleClass="login-box">
+               <children>
+                  <ImageView fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true">
+                     <image>
+                        <Image url="@images/LogoJacobsHoster.png" />
+                     </image>
+                  </ImageView>
+                  <TextField fx:id="txtUsuario" promptText="Usuario" />
+                  <PasswordField fx:id="txtPassword" promptText="Contraseña" />
+                  <Button fx:id="btnEntrar" mnemonicParsing="false" onAction="#onLogin" prefHeight="26.0" prefWidth="210.0" text="Entrar" />
+                  <Label fx:id="lblError" textFill="#ffbb5d" />
+               </children></VBox>
+         </children>
+      </Pane>
+   </children>
+</StackPane>
