@@ -1,8 +1,8 @@
+/* filepath: c:\Users\Berto\Desktop\Desarrollo de Aplicaciones Multiplataforma\1Curso 2025-2026\Ejercicios Eclipse\JacobsHoster\src\ui\styles\app.css */
 
+/*Login Screen Styles*/
 
-//Login Screen Styles
-
-//login background
+/*login background*/
 .login-root {
   -fx-background-image: url("../images/login_bg.png");
   -fx-background-size: cover;
@@ -10,14 +10,14 @@
   -fx-background-repeat: no-repeat;
 }
 
-//login box
+/*login box*/
 .login-box {
   -fx-background-color: rgba(10, 50, 128, 0.4);
   -fx-padding: 20;
   -fx-background-radius: 10;
 }
 
-//Login enter button
+/*Login enter button*/
 
 .login-box .button {
     -fx-background-color: rgba(176, 225, 160, 1.0);
@@ -35,11 +35,288 @@
     -fx-background-color: rgba(121, 192, 150, 1.0);
 }
 
+/* =========================
+   Ventana principal y ficha
+   ========================= */
+
+.root {
+    /* Base */
+    -fx-font-size: 12px;
+    -fx-font-family: "Segoe UI", "Inter", "Arial";
+    -fx-background-color: #dbe9ee; /* fondo azul gris suave */
+}
+
+/* ---------- Menú superior ---------- */
+.menu-bar {
+  -fx-background-color: #233a51;
+  -fx-padding: 4 10 4 10;
+}
+
+.menu-bar .label {
+  -fx-text-fill: white;
+}
+
+.menu-bar .menu:hover, .menu-bar .menu:showing {
+    -fx-background-color: #1c2f42;
+}
+
+/* ---------- Tabs ---------- */
+.tab-pane .tab-header-area {
+    -fx-background-color: #4a7596;
+}
+
+.tab-pane .tab-header-area .tab-header-background {
+    -fx-background-color: #4a7596;
+}
+
+.tab-pane .tab {
+  -fx-background-color: #80adc2;
+  -fx-background-insets: 0 4 0 0;  /* mete 4px invisibles a la derecha */
+  -fx-background-radius: 6 6 0 0;
+}
+
+.tab-pane .tab .tab-label {
+    -fx-text-fill: #102532;
+}
+
+.tab-pane .tab:selected {
+    -fx-background-color: #d8e6ec;
+}
+
+.tab-pane .tab:selected .tab-label {
+  -fx-text-fill: #1c3e4f;
+  -fx-font-weight: bold;
+}
+
+/* ---------- Panel izquierdo ---------- */
+.left-panel {
+    -fx-background-color: rgba(255,255,255,0.45);
+    -fx-background-radius: 10;
+    -fx-padding: 8;
+}
+.left-panel .button,
+.left-panel .date-picker,
+.left-panel .text-field {
+    -fx-pref-height: 28px;
+}
+.left-panel .list-view {
+    -fx-background-insets: 0;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-border-color: rgba(0,0,0,0.10);
+}
+
+
+/* ---------- Panel ficha (derecha) ---------- */
+.ficha-shell {
+    -fx-background-color: rgba(255,255,255,0.35);
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: rgba(0,0,0,0.08);
+}
+
+/* ScrollPane: quitamos “marco feo” */
+.scroll-pane {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+}
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+/* Contenedor del formulario */
+.ficha-root {
+    -fx-background-color: transparent;
+}
+
+/* Secciones tipo tarjeta */
+.ficha-section {
+    -fx-padding: 10;
+    -fx-background-color: rgba(255,255,255,0.65);
+    -fx-background-radius: 10;
+    -fx-border-radius: 10;
+    -fx-border-color: rgba(0,0,0,0.08);
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.08), 10, 0.15, 0, 2);
+}
+
+/* Títulos sección */
+.ficha-title {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1c3e4f;
+}
+
+/* Labels campos */
+.ficha-label {
+    -fx-text-fill: rgba(0,0,0,0.75);
+}
+
+/* Separators suaves */
+.separator .line {
+    -fx-border-color: rgba(0,0,0,0.10);
+}
+
+/* Inputs */
+.text-field, .date-picker {
+    -fx-background-color: #f7fbfd;
+    -fx-background-radius: 7;
+    -fx-border-radius: 7;
+    -fx-border-color: rgba(0,0,0,0.14);
+    -fx-pref-height: 28px;
+}
+.text-field:focused, .date-picker:focused {
+    -fx-border-color: #3b89b8;
+    -fx-border-width: 1.2;
+    -fx-effect: dropshadow(gaussian, rgba(59,137,184,0.25), 10, 0.2, 0, 0);
+}
+
+/* Checkbox */
+.check-box {
+    -fx-padding: 4 0 0 0;
+}
+
+/* ---------- Barra acciones inferior ---------- */
+.ficha-actions {
+    -fx-padding: 10;
+    -fx-spacing: 8;
+    -fx-alignment: CENTER_RIGHT;
+    -fx-background-color: rgba(255,255,255,0.55);
+    -fx-border-color: rgba(0,0,0,0.08);
+    -fx-border-width: 1 0 0 0;
+    -fx-background-radius: 0 0 12 12;
+}
+
+/* Botones generales */
+.button {
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-cursor: hand;
+	-fx-alignment: CENTER;
+}
+
+/* Guardar */
+.btn-guardar {
+  -fx-background-color: #71f4b9;
+  -fx-text-fill: #053024;
+  -fx-font-weight: bold;
+  -fx-padding: 6 14 6 14;
+  -fx-alignment: CENTER;
+}
+
+.btn-guardar:hover { -fx-background-color: #63e6ab; }
+
+.btn-guardar:pressed { -fx-background-color: #55d89e; }
+
+/* Eliminar */
+.btn-eliminar {
+  -fx-background-color: #ffb671;
+  -fx-text-fill: #3a1e08;
+  -fx-font-weight: bold;
+  -fx-padding: 6 14 6 14;
+  -fx-alignment: CENTER;
+}
+
+.btn-eliminar:hover { -fx-background-color: #f2aa66; }
+.btn-eliminar:pressed { -fx-background-color: #e59f5b; }
 
 
 
+/* Botón desplegable DatePicker */
+.date-picker > .arrow-button {
+  -fx-background-color: #79a4b7;
+  -fx-background-radius: 0 7 7 0;
+}
+
+.date-picker > .arrow-button:hover {
+  -fx-background-color: #6e98ab;
+}
+
+.date-picker > .arrow-button:pressed {
+  -fx-background-color: #628c9f;
+}
+
+/* Flecha blanca */
+.date-picker > .arrow-button > .arrow {
+  -fx-background-color: white;
+}
+
+/* Botones ◀ ▶ */
+.left-panel .button {
+    -fx-background-color: #79a4b7;
+    -fx-text-fill: white;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-font-weight: bold;
+}
+
+/* Hover */
+.left-panel .button:hover {
+  -fx-background-color: #6c97ab;
+}
+
+/* Pulsado */
+.left-panel .button:pressed {
+  -fx-background-color: #5f8a9e;
+}
 
 
+/* Barra de scroll */
+.scroll-bar {
+    -fx-background-color: transparent;
+}
+
+/* Carril */
+.scroll-bar .track {
+    -fx-background-color: #e6eff4;
+    -fx-background-radius: 8;
+}
+
+/* Thumb (la pieza que se mueve) */
+.scroll-bar .thumb {
+    -fx-background-color: #c1d2db;
+    -fx-background-radius: 8;
+}
+
+/* Hover */
+.scroll-bar .thumb:hover {
+  -fx-background-color: #b4c6d0;
+}
+
+/* Pulsado */
+.scroll-bar .thumb:pressed {
+  -fx-background-color: #a7bbc6;
+}
+
+/* Quitar flechas si quieres más limpio */
+.scroll-bar .increment-button,
+.scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar .increment-arrow,
+.scroll-bar .decrement-arrow {
+    -fx-background-color: transparent;
+}
+
+.left-panel .btn-exportar {
+  -fx-background-color: #71e1ff;
+  -fx-text-fill: #06313d;
+  -fx-font-weight: bold; 	
+  -fx-background-radius: 8;
+}
+
+.left-panel .btn-exportar:hover {
+  -fx-background-color: #63d4f2;
+}
+
+.left-panel .btn-exportar:pressed {
+  -fx-background-color: #55c6e5;
+}
 
 
-
+/* ---------- Estados de validación (para luego) ---------- */
+.field-error {
+    -fx-background-color: #fff2e6;
+    -fx-border-color: #ff8a3d;
+    -fx-border-width: 1.2;
+}

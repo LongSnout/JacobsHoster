@@ -72,55 +72,61 @@ public class EstanciaDAO {
 
 
 
-    public static void actualizar(Connection conn, Estancia e) throws SQLException {
+	public static void actualizar(Connection conn, Estancia e) throws SQLException {
 
-        String sql = """
-            UPDATE estancia
-            SET id_envio_xml = ?,
-                id_cama = ?,
-                id_albergue = ?,
-                id_peregrino = ?,
-                fecha_contrato = ?,
-                fecha_entrada = ?,
-                fecha_salida_prevista = ?,
-                fecha_salida_real = ?,
-                numero_habitaciones = ?,
-                id_grupo = ?,
-                internet_incluido = ?,
-                referencia_contrato = ?,
-                estado_estancia = ?
-            WHERE id_estancia = ?
-            """;
+	    String sql = """
+	        UPDATE estancia
+	        SET id_envio_xml = ?,
+	            id_cama = ?,
+	            id_albergue = ?,
+	            id_peregrino = ?,
+	            fecha_contrato = ?,
+	            fecha_entrada = ?,
+	            fecha_salida_prevista = ?,
+	            fecha_salida_real = ?,
+	            numero_habitaciones = ?,
+	            id_grupo = ?,
+	            internet_incluido = ?,
+	            referencia_contrato = ?,
+	            estado_estancia = ?
+	        WHERE id_estancia = ?
+	        """;
 
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            if (e.getIdEnvioXml() == null) ps.setNull(1, Types.INTEGER);
-            else ps.setInt(1, e.getIdEnvioXml());
+	        if (e.getIdEnvioXml() == null) ps.setNull(1, java.sql.Types.INTEGER);
+	        else ps.setInt(1, e.getIdEnvioXml());
 
-            if (e.getIdCama() == null) ps.setNull(2, Types.INTEGER);
-            else ps.setInt(2, e.getIdCama());
+	        if (e.getIdCama() == null) ps.setNull(2, java.sql.Types.INTEGER);
+	        else ps.setInt(2, e.getIdCama());
 
-            ps.setInt(3, e.getIdAlbergue());
-            ps.setInt(4, e.getIdPeregrino());
+	        ps.setInt(3, e.getIdAlbergue());
+	        ps.setInt(4, e.getIdPeregrino());
 
-            ps.setString(5, e.getFechaContrato());
-            ps.setString(6, e.getFechaEntrada());
-            ps.setString(7, e.getFechaSalidaPrevista());
-            ps.setString(8, e.getFechaSalidaReal());
+	        ps.setString(5, emptyToNull(e.getFechaContrato()));
+	        ps.setString(6, emptyToNull(e.getFechaEntrada()));
+	        ps.setString(7, emptyToNull(e.getFechaSalidaPrevista()));
+	        ps.setString(8, emptyToNull(e.getFechaSalidaReal()));
 
-            ps.setInt(9, e.getNumeroHabitaciones());
-            ps.setString(10, e.getIdGrupo());
+	        ps.setInt(9, e.getNumeroHabitaciones());
+	        ps.setString(10, emptyToNull(e.getIdGrupo()));
 
-            ps.setInt(11, e.isInternetIncluido() ? 1 : 0);
+	        ps.setBoolean(11, e.isInternetIncluido());
 
-            ps.setString(12, e.getReferenciaContrato());
-            ps.setString(13, e.getEstadoEstancia());
+	        ps.setString(12, emptyToNull(e.getReferenciaContrato()));
+	        ps.setString(13, emptyToNull(e.getEstadoEstancia()));
 
-            ps.setInt(14, e.getIdEstancia());
+	        ps.setInt(14, e.getIdEstancia());
 
-            ps.executeUpdate();
-        }
-    }
+	        ps.executeUpdate();
+	    }
+	}
+
+	private static String emptyToNull(String s) {
+	    if (s == null) return null;
+	    String t = s.trim();
+	    return t.isBlank() ? null : t;
+	}
 
 
     public static Estancia obtenerPorId(Connection conn, int idEstancia) throws SQLException {
@@ -179,6 +185,8 @@ public class EstanciaDAO {
 
         return lista;
     }
+    
+    
 
 
     public static List<Estancia> listarPorPeregrino(Connection conn, int idPeregrino) throws SQLException {
@@ -289,7 +297,29 @@ public class EstanciaDAO {
         }
     }
 
+    public static Estancia buscarActivaPorPeregrino(Connection conn, int idPeregrino) throws SQLException {
 
+        String sql = """
+            SELECT *
+            FROM estancia
+            WHERE id_peregrino = ?
+              AND estado_estancia = 'ACTIVA'
+            ORDER BY id_estancia DESC
+            LIMIT 1
+            """;
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idPeregrino);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapear(rs); // ahora te digo mapear()
+                }
+                return null;
+            }
+        }
+    }
+    
     
     
 }

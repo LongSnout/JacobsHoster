@@ -1,0 +1,335 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane prefHeight="400.0" prefWidth="600.0" styleClass="app-root" stylesheets="@styles/app.css" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.MainController">
+
+   <top>
+      <MenuBar>
+        <menus>
+          <Menu mnemonicParsing="false" text="Archivo">
+            <items>
+              <MenuItem mnemonicParsing="false" text="Close" />
+            </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="Edición">
+            <items>
+              <MenuItem mnemonicParsing="false" text="Delete" />
+            </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="Ayuda">
+            <items>
+              <MenuItem mnemonicParsing="false" text="About" />
+            </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="Perfiles">
+            <items>
+              <MenuItem mnemonicParsing="false" text="About" />
+            </items>
+          </Menu>
+        </menus>
+      </MenuBar>
+   </top>
+
+   <center>
+      <TabPane tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="CENTER">
+        <tabs>
+
+          <Tab text="Estancias">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0">
+                <children>
+
+                  <HBox spacing="7.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+
+                    <padding>
+                      <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                    </padding>
+
+                    <!-- COLUMNA IZQUIERDA -->
+                    <VBox prefWidth="220.0" spacing="6.0" styleClass="left-panel">
+                      <children>
+
+                        <HBox spacing="4.0">
+                          <children>
+                            <Button mnemonicParsing="false" text="◀" />
+                            <DatePicker maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
+                            <Button mnemonicParsing="false" text="▶" />
+                          </children>
+                        </HBox>
+
+                        <TextField promptText="Buscar (nombre, DNI...)" />
+
+                        <ListView fx:id="lvHuespedes" VBox.vgrow="ALWAYS" />
+
+                        <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="btn-exportar" text="Exportar XML Ministerio" VBox.vgrow="NEVER" />
+                      </children>
+                    </VBox>
+
+                    <!-- PANEL DERECHO (ficha) -->
+                    <BorderPane styleClass="ficha-shell" HBox.hgrow="ALWAYS">
+
+                      <center>
+                        <ScrollPane fx:id="spFicha" fitToWidth="true" hbarPolicy="NEVER" BorderPane.alignment="CENTER">
+                          <content>
+                            <VBox maxWidth="1.7976931348623157E308" spacing="14.0" styleClass="ficha-root">
+                              <padding>
+                                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                              </padding>
+
+                              <children>
+
+                                <!-- =========================
+                                     DATOS MINIMOS MINISTERIO
+                                     ========================= -->
+                                <VBox spacing="8.0" styleClass="ficha-section">
+                                  <children>
+                                    <Label focusTraversable="false" styleClass="ficha-title" text="Datos mínimos Ministerio de Interior" />
+                                    <Separator />
+
+                                    <!-- PERSONA (minimos) -->
+                                    <GridPane hgap="10.0" vgap="8.0">
+                                      <columnConstraints>
+                                        <ColumnConstraints minWidth="170.0" prefWidth="170.0" />
+                                        <ColumnConstraints hgrow="ALWAYS" />
+                                      </columnConstraints>
+
+                                      <children>
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="DNI/NIF/NIE/PAS/OTRO/CIF/CIF_E" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                                        <TextField fx:id="tfTipoDocumento" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="Número de documento" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                                        <TextField fx:id="tfNumeroDocumento" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="Nombre" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                                        <TextField fx:id="tfNombre" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="Apellido 1" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                                        <TextField fx:id="tfApellido1" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="Apellido 2" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                                        <TextField fx:id="tfApellido2" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="Fecha de nacimiento" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+                                        <TextField fx:id="tfFechaNacimiento" maxWidth="1.7976931348623157E308" promptText="dd/MM/aaaa" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="Sexo (H/M/O)" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+                                        <TextField fx:id="tfSexo" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="Nacionalidad (ISO3)" GridPane.columnIndex="0" GridPane.rowIndex="7" />
+                                        <TextField fx:id="tfNacionalidad" maxWidth="1.7976931348623157E308" promptText="ESP" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+                                      </children>
+
+                                      <rowConstraints>
+                                        <RowConstraints /><RowConstraints /><RowConstraints /><RowConstraints />
+                                        <RowConstraints /><RowConstraints /><RowConstraints /><RowConstraints />
+                                      </rowConstraints>
+                                    </GridPane>
+
+                                    <Separator />
+                                    <Label focusTraversable="false" styleClass="ficha-title" text="Dirección" />
+
+                                    <!-- DIRECCION (minimos) -->
+                                    <GridPane hgap="10.0" vgap="8.0">
+                                      <columnConstraints>
+                                        <ColumnConstraints minWidth="170.0" prefWidth="170.0" />
+                                        <ColumnConstraints hgrow="ALWAYS" />
+                                      </columnConstraints>
+
+                                      <children>
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="País (ISO3)" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                                        <TextField fx:id="tfPais" maxWidth="1.7976931348623157E308" promptText="ESP" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="Código postal" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                                        <TextField fx:id="tfCodigoPostal" maxWidth="1.7976931348623157E308" promptText="#####" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="Dirección" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                                        <TextField fx:id="tfDireccion" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="Código municipio (ESP)" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                                        <TextField fx:id="tfCodigoMunicipio" maxWidth="1.7976931348623157E308" promptText="#####" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="Municipio (no ESP)" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                                        <TextField fx:id="tfNombreMunicipio" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                                      </children>
+
+                                      <rowConstraints>
+                                        <RowConstraints /><RowConstraints /><RowConstraints /><RowConstraints /><RowConstraints />
+                                      </rowConstraints>
+                                    </GridPane>
+                                  </children>
+                                </VBox>
+
+                                <!-- ========================= ESTANCIA ========================= -->
+                                <VBox spacing="8.0" styleClass="ficha-section">
+                                  <children>
+                                    <Label focusTraversable="false" styleClass="ficha-title" text="Estancia" />
+                                    <Separator />
+
+                                    <GridPane hgap="10.0" vgap="8.0">
+                                      <columnConstraints>
+                                        <ColumnConstraints minWidth="170.0" prefWidth="170.0" />
+                                        <ColumnConstraints hgrow="ALWAYS" />
+                                      </columnConstraints>
+
+                                      <children>
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="Referencia" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                                        <TextField fx:id="tfReferencia" editable="false" focusTraversable="false" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="Fecha entrada" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                                        <TextField fx:id="tfFechaEntrada" maxWidth="1.7976931348623157E308" promptText="dd/MM/aaaa HH:mm" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="Fecha salida" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                                        <TextField fx:id="tfFechaSalida" maxWidth="1.7976931348623157E308" promptText="dd/MM/aaaa HH:mm" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="Nº habitaciones" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                                        <TextField fx:id="tfNumHabitaciones" maxWidth="1.7976931348623157E308" promptText="1" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="Internet" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                                        <CheckBox fx:id="cbInternet" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="Tamaño de grupo" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+                                        <TextField fx:id="tfTamGrupo" maxWidth="1.7976931348623157E308" promptText="1" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="Nº personas (contrato)" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+                                        <TextField fx:id="tfNumPersonas" maxWidth="1.7976931348623157E308" promptText="1" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                                      </children>
+
+                                      <rowConstraints>
+                                        <RowConstraints /><RowConstraints /><RowConstraints /><RowConstraints />
+                                        <RowConstraints /><RowConstraints /><RowConstraints />
+                                      </rowConstraints>
+                                    </GridPane>
+                                  </children>
+                                </VBox>
+
+                                <!-- ========================= PAGO ========================= -->
+                                <VBox spacing="8.0" styleClass="ficha-section">
+                                  <children>
+                                    <Label focusTraversable="false" styleClass="ficha-title" text="Pago" />
+                                    <Separator />
+
+                                    <GridPane hgap="10.0" vgap="8.0">
+                                      <columnConstraints>
+                                        <ColumnConstraints minWidth="170.0" prefWidth="170.0" />
+                                        <ColumnConstraints hgrow="ALWAYS" />
+                                      </columnConstraints>
+
+                                      <children>
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="Tipo de pago" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                                        <TextField fx:id="tfTipoPago" maxWidth="1.7976931348623157E308" promptText="EFECT / TARJT / ..." GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="Titular" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                                        <TextField fx:id="tfTitular" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="Caducidad tarjeta" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                                        <TextField fx:id="tfCaducidadTarjeta" maxWidth="1.7976931348623157E308" promptText="mm/aaaa" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="Medio de pago" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                                        <TextField fx:id="tfMedioPago" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="Fecha de pago" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                                        <TextField fx:id="tfFechaPago" maxWidth="1.7976931348623157E308" promptText="dd/MM/aaaa" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                                      </children>
+
+                                      <rowConstraints>
+                                        <RowConstraints /><RowConstraints /><RowConstraints /><RowConstraints /><RowConstraints />
+                                      </rowConstraints>
+                                    </GridPane>
+                                  </children>
+                                </VBox>
+
+                                <!-- ========================= EXTRAS ========================= -->
+                                <VBox spacing="8.0" styleClass="ficha-section">
+                                  <children>
+                                    <Label focusTraversable="false" styleClass="ficha-title" text="Extras (opcionales)" />
+                                    <Separator />
+
+                                    <GridPane hgap="10.0" vgap="8.0">
+                                      <columnConstraints>
+                                        <ColumnConstraints minWidth="170.0" prefWidth="170.0" />
+                                        <ColumnConstraints hgrow="ALWAYS" />
+                                      </columnConstraints>
+
+                                      <children>
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="Soporte documento" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                                        <TextField fx:id="tfSoporteDocumento" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="Dirección complementaria" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                                        <TextField fx:id="tfDireccionComplementaria" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="Teléfono" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                                        <TextField fx:id="tfTelefono" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="Teléfono 2" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                                        <TextField fx:id="tfTelefono2" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="Correo" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                                        <TextField fx:id="tfCorreo" maxWidth="1.7976931348623157E308" promptText="correo@ejemplo.com" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="Parentesco" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+                                        <TextField fx:id="tfParentesco" maxWidth="1.7976931348623157E308" promptText="AB/BA/..." GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                                      </children>
+
+                                      <rowConstraints>
+                                        <RowConstraints /><RowConstraints /><RowConstraints />
+                                        <RowConstraints /><RowConstraints /><RowConstraints />
+                                      </rowConstraints>
+                                    </GridPane>
+                                  </children>
+                                </VBox>
+
+                              </children>
+                            </VBox>
+                          </content>
+                        </ScrollPane>
+                      </center>
+
+                      <bottom>
+                        <HBox styleClass="ficha-actions" BorderPane.alignment="CENTER">
+                          <children>
+                            <Region HBox.hgrow="ALWAYS" />
+                            <Button fx:id="btnEliminar" mnemonicParsing="false" onAction="#onEliminarFicha" styleClass="btn-eliminar" text="Eliminar ficha" />
+
+							<Button fx:id="btnGuardar" defaultButton="true" mnemonicParsing="false" onAction="#onGuardarFicha" styleClass="btn-guardar" text="Guardar ficha" />
+                          </children>
+                        </HBox>
+                      </bottom>
+
+                    </BorderPane>
+
+                  </HBox>
+                </children>
+              </AnchorPane>
+            </content>
+          </Tab>
+
+          <Tab text="Ventas"><content><AnchorPane minHeight="0.0" minWidth="0.0" /></content></Tab>
+          <Tab text="Informes y estadísticas"><content><AnchorPane minHeight="0.0" minWidth="0.0" /></content></Tab>
+          <Tab text="Servidor en la nube"><content><AnchorPane minHeight="0.0" minWidth="0.0" /></content></Tab>
+
+        </tabs>
+      </TabPane>
+   </center>
+</BorderPane>

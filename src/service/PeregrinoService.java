@@ -64,6 +64,15 @@ public class PeregrinoService {
             );
         }
     }
+    
+    public static void eliminar(int idPeregrino) {
+
+        try (Connection conn = DBManager.getConnection()) {
+            PeregrinoDAO.eliminarPorId(conn, idPeregrino);
+        } catch (SQLException e) {
+            throw new DatabaseException("Error al eliminar peregrino id=" + idPeregrino, e);
+        }
+    }
 
     
     

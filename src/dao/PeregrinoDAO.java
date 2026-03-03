@@ -231,4 +231,14 @@ public class PeregrinoDAO {
 
         return p;
     }
+    
+    public static void eliminarPorId(Connection conn, int idPeregrino) throws SQLException {
+
+        String sql = "DELETE FROM peregrino WHERE id_peregrino = ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idPeregrino);
+            ps.executeUpdate();
+        }
+    }
 }

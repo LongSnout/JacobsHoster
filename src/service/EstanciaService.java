@@ -107,6 +107,37 @@ public class EstanciaService {
         }
     }
     
+    public static Estancia buscarActivaPorPeregrino(int idPeregrino) {
+
+        try (Connection conn = DBManager.getConnection()) {
+            return EstanciaDAO.buscarActivaPorPeregrino(conn, idPeregrino);
+        } catch (SQLException e) {
+            throw new DatabaseException("Error al buscar estancia activa para id_peregrino=" + idPeregrino, e);
+        }
+    }
+
+    /**
+     * Inserta o actualiza una estancia.
+     * Si id_estancia == 0 -> insertar.
+     * Si id_estancia != 0 -> actualizar.
+     */
+    public static void guardar(Estancia e) {
+
+        if (e == null) return;
+
+        try (Connection conn = DBManager.getConnection()) {
+
+            if (e.getIdEstancia() == 0) {
+                EstanciaDAO.insertar(conn, e);
+            } else {
+                EstanciaDAO.actualizar(conn, e);
+            }
+
+        } catch (SQLException ex) {
+            throw new DatabaseException("Error al guardar estancia", ex);
+        }
+    }
+    
     
     
     
