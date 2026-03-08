@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import javafx.animation.PauseTransition;
 import javafx.application.Platform;
 
 import javafx.geometry.Side;
@@ -37,6 +38,8 @@ import javafx.scene.control.Label;
 
 import model.Estancia;
 import service.EstanciaService;
+
+import javafx.util.Duration;
 
 
 
@@ -90,10 +93,12 @@ public class MainController {
 
     @FXML
     private void initialize() {
-    	
+
         configurarListView();
+
         fechaLista = LocalDate.now();
         dpFechaLista.setValue(fechaLista);
+
         refrescarLista();
         actualizarModoBusqueda();
 
@@ -106,22 +111,28 @@ public class MainController {
         // Carga municipios para autocompletar
         cargarMunicipiosDesdeCSV();
         activarAutocompletarMunicipio();
-        
+
         // Carga países para validación
         cargarPaisesDesdeCSV();
         activarAutocompletarPais(tfNacionalidad);
         activarAutocompletarPais(tfPais);
-        
+
         // Instala validación suave (naranja) en campos clave
         instalarValidacionSuave();
-        
-        // Instala normalización flexible de fechas (acepta varios formatos, pero muestra siempre dd/MM/yyyy)
+
+        // Instala normalización flexible de fechas
         activarFechasFlexibles();
 
-        // Arranque: ficha nueva
+        // Autorrelleno por documento al salir del campo
+        tfNumeroDocumento.focusedProperty().addListener((obs, wasFocused, isFocused) -> {
+            if (!isFocused) {
+                intentarAutorrellenarPorDocumento();
+            }
+        });
 
+        // Arranque: ficha nueva
         nuevaFicha();
-        
+
         Platform.runLater(() -> {
             lvHuespedes.getScene().addEventFilter(
                 javafx.scene.input.KeyEvent.KEY_PRESSED, event -> {
@@ -135,20 +146,18 @@ public class MainController {
                     }
                 });
         });
-        
+
         dpFechaLista.valueProperty().addListener((obs, oldVal, newVal) -> {
             if (newVal != null) {
                 fechaLista = newVal;
                 refrescarLista();
             }
         });
-        
+
         tfBuscarHuesped.textProperty().addListener((obs, oldVal, newVal) -> {
             actualizarModoBusqueda();
             refrescarLista();
         });
-        
-        
     }
 
     // --------------------------
@@ -274,6 +283,8 @@ public class MainController {
         aplicarReglaMunicipio();
         
         cargarEstanciaDe(p);
+        
+        bloquearDocumentoSiExistente(true);
     }
 
     private void volcarDeFichaAActual() {
@@ -368,6 +379,7 @@ public class MainController {
     private void nuevaFicha() {
         actual = new Peregrino();
         actual.setRol("VI");
+        bloquearDocumentoSiExistente(false);
 
         // Limpia selección
         lvHuespedes.getSelectionModel().clearSelection();
@@ -1521,5 +1533,74 @@ public class MainController {
         btnDiaSiguiente.setOpacity(buscando ? 0.5 : 1.0);
     }
     
+    private void intentarAutorrellenarPorDocumento() {
+
+        String tipo = trim(tfTipoDocumento).toUpperCase();
+        String numero = trim(tfNumeroDocumento).toUpperCase();
+
+        if (tipo.isBlank() || numero.isBlank()) return;
+
+        try {
+            Peregrino existente = PeregrinoService.obtenerPorDocumento(tipo, numero);
+
+            if (existente == null) {
+                bloquearDocumentoSiExistente(false);
+                return;
+            }
+
+            // Si ya estamos editando ese mismo peregrino, no hacemos nada extra
+            if (actual != null && actual.getIdPeregrino() == existente.getIdPeregrino()) {
+                bloquearDocumentoSiExistente(true);
+                return;
+            }
+
+            actual = existente;
+
+            tfNombre.setText(safe(existente.getNombre()));
+            tfApellido1.setText(safe(existente.getApellido1()));
+            tfApellido2.setText(safe(existente.getApellido2()));
+            tfFechaNacimiento.setText(fechaEsDesdeIso(existente.getFechaNacimiento()));
+            tfSexo.setText(safe(existente.getSexo()));
+            tfNacionalidad.setText(safe(existente.getNacionalidad()));
+            tfPais.setText(safe(existente.getPais()));
+            tfCodigoPostal.setText(safe(existente.getCodigoPostal()));
+            tfDireccion.setText(safe(existente.getDireccion()));
+            tfDireccionComplementaria.setText(safe(existente.getDireccionComplementaria()));
+            tfCodigoMunicipio.setText(safe(existente.getCodigoMunicipio()));
+            tfNombreMunicipio.setText(safe(existente.getNombreMunicipio()));
+            tfTelefono.setText(safe(existente.getTelefono1()));
+            tfTelefono2.setText(safe(existente.getTelefono2()));
+            tfCorreo.setText(safe(existente.getCorreo()));
+            tfParentesco.setText(safe(existente.getParentesco()));
+
+            aplicarReglaMunicipio();
+            bloquearDocumentoSiExistente(true);
+            marcarDocumentoComoAutorrellenado();
+
+        } catch (DatabaseException e) {
+            System.out.println(e.getMessage());
+        }
+    }
     
+    private void marcarDocumentoComoAutorrellenado() {
+        String estiloOk = "-fx-background-color: #dff3e3; -fx-border-color: #1f6f3e;";
+
+        tfTipoDocumento.setStyle(estiloOk);
+        tfNumeroDocumento.setStyle(estiloOk);
+
+        PauseTransition pausa = new PauseTransition(javafx.util.Duration.seconds(1.2));
+        pausa.setOnFinished(e -> {
+            tfTipoDocumento.setStyle("");
+            tfNumeroDocumento.setStyle("");
+        });
+        pausa.play();
+    }
+
+    private void bloquearDocumentoSiExistente(boolean bloquear) {
+        tfTipoDocumento.setEditable(!bloquear);
+        tfNumeroDocumento.setEditable(!bloquear);
+
+        tfTipoDocumento.setFocusTraversable(!bloquear);
+        tfNumeroDocumento.setFocusTraversable(!bloquear);
+    }
 }
