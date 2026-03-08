@@ -46,10 +46,10 @@ public class EstanciaDAO {
 	        ps.setInt(3, e.getIdAlbergue());
 	        ps.setInt(4, e.getIdPeregrino());
 
-	        ps.setString(5, e.getFechaContrato());
-	        ps.setString(6, e.getFechaEntrada());
-	        ps.setString(7, e.getFechaSalidaPrevista());
-	        ps.setString(8, e.getFechaSalidaReal());
+	        ps.setString(5, emptyToNull(e.getFechaContrato()));
+	        ps.setString(6, emptyToNull(e.getFechaEntrada()));
+	        ps.setString(7, emptyToNull(e.getFechaSalidaPrevista()));
+	        ps.setString(8, emptyToNull(e.getFechaSalidaReal()));
 
 	        ps.setInt(9, e.getNumeroHabitaciones());
 	        ps.setString(10, e.getIdGrupo());
@@ -320,6 +320,40 @@ public class EstanciaDAO {
         }
     }
     
+    public static Estancia buscarPorPeregrinoYFecha(Connection conn, int idPeregrino, String fechaISO) throws SQLException {
+
+        String sql = """
+            SELECT *
+            FROM estancia
+            WHERE id_peregrino = ?
+              AND estado_estancia <> 'CANCELADA'
+              AND fecha_entrada <= ?
+              AND (
+                    (fecha_salida_real IS NOT NULL AND fecha_salida_real >= ?)
+                    OR
+                    (fecha_salida_real IS NULL AND fecha_salida_prevista IS NOT NULL AND fecha_salida_prevista >= ?)
+                    OR
+                    (fecha_salida_real IS NULL AND fecha_salida_prevista IS NULL)
+                  )
+            ORDER BY fecha_entrada DESC, id_estancia DESC
+            LIMIT 1
+            """;
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idPeregrino);
+            ps.setString(2, fechaISO);
+            ps.setString(3, fechaISO);
+            ps.setString(4, fechaISO);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapear(rs);
+                }
+            }
+        }
+
+        return null;
+    }
     
     
 }

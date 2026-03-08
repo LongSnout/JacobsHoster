@@ -74,7 +74,13 @@ public class PeregrinoService {
         }
     }
 
-    
+    public static List<Peregrino> buscarGlobal(String texto) {
+        try (Connection conn = DBManager.getConnection()) {
+            return PeregrinoDAO.buscarGlobal(conn, texto);
+        } catch (SQLException e) {
+            throw new DatabaseException("Error al buscar peregrinos: " + texto, e);
+        }
+    }
     
     
     

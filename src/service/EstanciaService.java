@@ -1,6 +1,7 @@
 package service;
 
 import dao.EstanciaDAO;
+import dao.PeregrinoDAO;
 import db.DBManager;
 import exception.DatabaseException;
 import model.Estancia;
@@ -137,7 +138,33 @@ public class EstanciaService {
             throw new DatabaseException("Error al guardar estancia", ex);
         }
     }
+    /*//al final no se usa este método, se ha hecho con el de EstanciaDAO directamente, pero lo dejo por si acaso
+    public static java.util.List<model.Peregrino> listarPeregrinosPorDia(int idAlbergue, LocalDate fecha) {
+        try (Connection conn = DBManager.getConnection()) {
+        	return PeregrinoDAO.listarPresentesPorDia(conn, idAlbergue, fecha.toString());
+        } catch (SQLException e) {
+            throw new DatabaseException("Error al listar peregrinos por día " + fecha, e);
+        }
+    }
+    */
+    public static java.util.List<model.Peregrino> listarPeregrinosPresentesPorDia(int idAlbergue, LocalDate fecha) {
+        try (Connection conn = DBManager.getConnection()) {
+        	return PeregrinoDAO.listarPresentesPorDia(conn, idAlbergue, fecha.toString());
+        } catch (SQLException e) {
+            throw new DatabaseException("Error al listar peregrinos presentes en fecha " + fecha, e);
+        }
+    }
     
+    public static Estancia buscarPorPeregrinoYFecha(int idPeregrino, LocalDate fecha) {
+        try (Connection conn = DBManager.getConnection()) {
+            return EstanciaDAO.buscarPorPeregrinoYFecha(conn, idPeregrino, fecha.toString());
+        } catch (SQLException e) {
+            throw new DatabaseException(
+                    "Error al buscar estancia para id_peregrino=" + idPeregrino + " en fecha " + fecha,
+                    e
+            );
+        }
+    }
     
     
     

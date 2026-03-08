@@ -241,4 +241,76 @@ public class PeregrinoDAO {
             ps.executeUpdate();
         }
     }
+    
+    public static List<Peregrino> listarPresentesPorDia(Connection conn, int idAlbergue, String fechaISO) throws SQLException {
+
+        String sql = """
+            SELECT DISTINCT p.*
+            FROM peregrino p
+            JOIN estancia e ON e.id_peregrino = p.id_peregrino
+            WHERE e.id_albergue = ?
+              AND e.estado_estancia <> 'CANCELADA'
+              AND e.fecha_entrada <= ?
+              AND (
+                    (e.fecha_salida_real IS NOT NULL AND e.fecha_salida_real >= ?)
+                    OR
+                    (e.fecha_salida_real IS NULL AND e.fecha_salida_prevista IS NOT NULL AND e.fecha_salida_prevista >= ?)
+                    OR
+                    (e.fecha_salida_real IS NULL AND e.fecha_salida_prevista IS NULL)
+                  )
+            ORDER BY p.apellido1, p.apellido2, p.nombre
+            """;
+
+        List<Peregrino> lista = new ArrayList<>();
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idAlbergue);
+            ps.setString(2, fechaISO);
+            ps.setString(3, fechaISO);
+            ps.setString(4, fechaISO);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    lista.add(mapear(rs));
+                }
+            }
+        }
+
+        return lista;
+    }
+    
+    public static List<Peregrino> buscarGlobal(Connection conn, String texto) throws SQLException {
+
+        String sql = """
+            SELECT *
+            FROM peregrino
+            WHERE UPPER(COALESCE(nombre, '')) LIKE ?
+               OR UPPER(COALESCE(apellido1, '')) LIKE ?
+               OR UPPER(COALESCE(apellido2, '')) LIKE ?
+               OR UPPER(COALESCE(tipo_documento, '')) LIKE ?
+               OR UPPER(COALESCE(numero_documento, '')) LIKE ?
+               OR UPPER(COALESCE(telefono1, '')) LIKE ?
+               OR UPPER(COALESCE(telefono2, '')) LIKE ?
+               OR UPPER(COALESCE(correo, '')) LIKE ?
+            ORDER BY id_peregrino DESC
+            """;
+
+        List<Peregrino> lista = new ArrayList<>();
+        String patron = "%" + texto.trim().toUpperCase() + "%";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            for (int i = 1; i <= 8; i++) {
+                ps.setString(i, patron);
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    lista.add(mapear(rs));
+                }
+            }
+        }
+
+        return lista;
+    }
+    
 }
