@@ -233,4 +233,38 @@ public class AlbergueDAO {
 
         return a;
     }
+    
+    public static void resetearAlbergueActual(Connection conn) throws SQLException {
+
+        String sql = """
+            UPDATE albergue
+            SET nombre = 'SIN CONFIGURAR',
+                direccion = NULL,
+                municipio = NULL,
+                provincia = NULL,
+                pais = 'ESP',
+                telefono = NULL,
+                email = NULL,
+                codigo_establecimiento_mir = NULL,
+                id_albergue_nube = NULL,
+                api_key = NULL,
+                sincronizacion_activa = 0,
+                fecha_ultima_sincronizacion = NULL,
+                api_base_url = NULL,
+                install_id = NULL,
+                install_secret = NULL,
+                install_registered_at = NULL,
+                admite_reservas = 0,
+                numeracion_camas_activa = 0
+            WHERE id_albergue = 1
+            """;
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.executeUpdate();
+        }
+    }
+    
+    
 }
+
+

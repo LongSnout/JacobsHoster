@@ -93,4 +93,61 @@ public class UsuarioDAO {
 
         return u;
     }
+    
+    public static void actualizarCredenciales(Connection conn, int idUsuario, String nuevoNombreUsuario, String nuevoPasswordHash) throws SQLException {
+
+        String sql = """
+            UPDATE usuario
+            SET nombre_usuario = ?,
+                password_hash = ?
+            WHERE id_usuario = ?
+            """;
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, nuevoNombreUsuario);
+            ps.setString(2, nuevoPasswordHash);
+            ps.setInt(3, idUsuario);
+            ps.executeUpdate();
+        }
+    }
+    
+    public static Usuario obtenerPrimerGerente(Connection conn) throws SQLException {
+
+        String sql = """
+            SELECT *
+            FROM usuario
+            WHERE rol = 'GERENTE'
+            ORDER BY id_usuario ASC
+            LIMIT 1
+            """;
+
+        try (PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            if (rs.next()) {
+                return mapear(rs);
+            }
+        }
+
+        return null;
+    }
+    
+    public static Usuario obtenerPorId(Connection conn, int idUsuario) throws SQLException {
+
+        String sql = "SELECT * FROM usuario WHERE id_usuario = ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idUsuario);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapear(rs);
+                }
+            }
+        }
+
+        return null;
+    }
+    
+    
 }

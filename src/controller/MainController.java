@@ -35,8 +35,9 @@ import javafx.geometry.Side;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.CustomMenuItem;
 import javafx.scene.control.Label;
-
+import model.Albergue;
 import model.Estancia;
+import service.AlbergueService;
 import service.CamaService;
 import service.EstanciaService;
 
@@ -1680,6 +1681,78 @@ public class MainController {
     private boolean esEstanciaNueva() {
         return estanciaActual == null || estanciaActual.getIdEstancia() == 0;
     }
+    
+    @FXML
+    private void onEditarAlbergue() {
+        try {
+            Albergue actual = AlbergueService.obtenerAlbergue();
+
+            if (actual == null) {
+                System.out.println("No existe ningún albergue para editar.");
+                return;
+            }
+
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                    getClass().getResource("/ui/nuevo_albergue.fxml")
+            );
+
+            javafx.scene.Scene scene = new javafx.scene.Scene(loader.load());
+
+            NuevoAlbergueController controller = loader.getController();
+            controller.cargarModoEdicion(actual);
+
+            javafx.stage.Stage stage = new javafx.stage.Stage();
+            stage.setTitle("Editar albergue");
+            stage.setScene(scene);
+            stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+            stage.showAndWait();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    @FXML
+    private void onEliminarAlbergueActual() {
+        try {
+            Albergue actual = AlbergueService.obtenerAlbergue();
+
+            if (actual == null) {
+                System.out.println("No existe ningún albergue para eliminar.");
+                return;
+            }
+
+            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Reestablecer albergue");
+            alert.setHeaderText("¿Seguro que quieres eliminar la configuración del albergue actual?");
+            alert.setContentText("Esta acción vaciará los datos del albergue actual, pero no eliminará peregrinos, estancias ni camas.");
+
+            javafx.scene.control.ButtonType btnNoEliminar =
+                    new javafx.scene.control.ButtonType("No reestablecer", javafx.scene.control.ButtonBar.ButtonData.CANCEL_CLOSE);
+
+            javafx.scene.control.ButtonType btnEliminar =
+                    new javafx.scene.control.ButtonType("Restablecer albergue actual", javafx.scene.control.ButtonBar.ButtonData.OK_DONE);
+
+            alert.getButtonTypes().setAll(btnNoEliminar, btnEliminar);
+
+            javafx.scene.control.Button botonVerde = (javafx.scene.control.Button) alert.getDialogPane().lookupButton(btnNoEliminar);
+            javafx.scene.control.Button botonNaranja = (javafx.scene.control.Button) alert.getDialogPane().lookupButton(btnEliminar);
+
+            botonVerde.setStyle("-fx-background-color: #71f4b9; -fx-text-fill: black;");
+            botonNaranja.setStyle("-fx-background-color: #ffb671; -fx-text-fill: black;");
+
+            java.util.Optional<javafx.scene.control.ButtonType> result = alert.showAndWait();
+
+            if (result.isPresent() && result.get() == btnEliminar) {
+            	AlbergueService.resetearAlbergueActual();
+            	System.out.println("Datos del albergue actual reseteados correctamente.");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
     
  // FUTURO:
  // Cuando existan preregistros desde la nube, el indicador de plazas deberá

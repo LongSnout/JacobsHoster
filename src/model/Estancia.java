@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 
 import dao.EstanciaDAO;
+import dao.PeregrinoDAO;
 import db.DBManager;
 import exception.DatabaseException;
 
@@ -165,7 +166,7 @@ public class Estancia {
     
     public static java.util.List<model.Peregrino> listarPeregrinosPresentesPorDia(int idAlbergue, LocalDate fecha) {
         try (Connection conn = DBManager.getConnection()) {
-            return EstanciaDAO.listarPeregrinosPresentesPorDia(conn, idAlbergue, fecha.toString());
+            return PeregrinoDAO.listarPresentesPorDia(conn, idAlbergue, fecha.toString());
         } catch (SQLException e) {
             throw new DatabaseException("Error al listar peregrinos presentes en fecha " + fecha, e);
         }

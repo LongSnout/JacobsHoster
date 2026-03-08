@@ -30,10 +30,9 @@
         <menus>
           	<Menu mnemonicParsing="false" text="Archivo">
     			<items>
-        			<MenuItem mnemonicParsing="false" text="Nuevo albergue" onAction="#onNuevoAlbergue" />
-        			<MenuItem mnemonicParsing="false" text="Close" />
+        			<MenuItem mnemonicParsing="false" text="Editar albergue" onAction="#onEditarAlbergue" />
     			</items>
-	    	</Menu>
+			</Menu>
           <Menu mnemonicParsing="false" text="Edición">
             <items>
               <MenuItem mnemonicParsing="false" text="Delete" />

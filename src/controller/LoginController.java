@@ -11,6 +11,10 @@ import model.Usuario;
 import service.AuthService;
 import exception.AuthException;
 
+import javafx.application.Platform;
+import service.AlbergueService;
+import controller.NuevoAlbergueController;
+
 public class LoginController {
 
     @FXML private TextField txtUsuario;
@@ -22,6 +26,17 @@ public class LoginController {
         if (lblError != null) {
             lblError.setText("");
         }
+
+        Platform.runLater(() -> {
+            try {
+                if (AlbergueService.requiereConfiguracionInicial()) {
+                    abrirConfiguracionInicial();
+                }
+            } catch (Exception e) {
+                lblError.setText("Error comprobando la configuración inicial");
+                e.printStackTrace();
+            }
+        });
     }
 
     @FXML
@@ -48,6 +63,26 @@ public class LoginController {
             lblError.setText(e.getMessage());
         } catch (Exception e) {
             lblError.setText("Error cargando la pantalla principal");
+            e.printStackTrace();
+        }
+    }
+    
+    private void abrirConfiguracionInicial() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/nuevo_albergue.fxml"));
+            Scene scene = new Scene(loader.load());
+
+            NuevoAlbergueController controller = loader.getController();
+            controller.activarModoInicial();
+
+            Stage stage = new Stage();
+            stage.setTitle("Configuración inicial");
+            stage.setScene(scene);
+            stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+            stage.showAndWait();
+
+        } catch (Exception e) {
+            lblError.setText("Error abriendo la configuración inicial");
             e.printStackTrace();
         }
     }
