@@ -37,6 +37,7 @@ import javafx.scene.control.CustomMenuItem;
 import javafx.scene.control.Label;
 
 import model.Estancia;
+import service.CamaService;
 import service.EstanciaService;
 
 import javafx.util.Duration;
@@ -83,6 +84,8 @@ public class MainController {
     @FXML private Button btnDiaSiguiente;
     @FXML private javafx.scene.control.DatePicker dpFechaLista;
     @FXML private TextField tfBuscarHuesped;
+    
+    @FXML private Label lblPlazas;
     
 
     private LocalDate fechaLista = LocalDate.now();
@@ -233,6 +236,8 @@ public class MainController {
             e.printStackTrace();
             lvHuespedes.setItems(FXCollections.observableArrayList());
         }
+        
+        refrescarIndicadorPlazas();
     }
 
     /*
@@ -379,8 +384,16 @@ public class MainController {
     private void nuevaFicha() {
         actual = new Peregrino();
         actual.setRol("VI");
+        
+        estanciaActual = new Estancia();
+        estanciaActual.setIdAlbergue(1);
+        estanciaActual.setEstadoEstancia("ACTIVA");
+        estanciaActual.setNumeroHabitaciones(1);
+        
         bloquearDocumentoSiExistente(false);
+        
 
+        
         // Limpia selección
         lvHuespedes.getSelectionModel().clearSelection();
 
@@ -398,6 +411,9 @@ public class MainController {
         LocalDate hoy = LocalDate.now();
         tfFechaEntrada.setText(hoy.format(FECHA_ES));
         tfFechaSalida.setText(hoy.plusDays(1).format(FECHA_ES));
+        
+        estanciaActual.setFechaEntrada(hoy.toString());
+        estanciaActual.setFechaSalidaPrevista(hoy.plusDays(1).toString());
 
         // Limpia el resto de campos típicos (si quieres, opcional)
         tfNumeroDocumento.setText("");
@@ -449,7 +465,7 @@ public class MainController {
         normalizarCampoFecha(tfFechaEntrada);
         normalizarCampoFecha(tfFechaSalida);
         normalizarCampoFecha(tfFechaNacimiento);
-        
+
         LocalDate fn = parseFechaFlexible(tfFechaNacimiento.getText());
         if (fn != null && fn.isAfter(LocalDate.now())) {
             marcarError(tfFechaNacimiento, true);
@@ -466,6 +482,22 @@ public class MainController {
         validarIso3(tfNacionalidad);
         validarIso3(tfPais);
         validarMunicipioSegunPaisSoloCampos();
+
+        // Bloqueo por aforo: solo para estancias nuevas
+        LocalDate fechaControl = parseFechaFlexible(tfFechaEntrada.getText());
+        if (fechaControl == null) {
+            fechaControl = LocalDate.now();
+        }
+
+        if (esEstanciaNueva()) {
+            int ocupadas = EstanciaService.contarPlazasOcupadasEnFecha(1, fechaControl);
+            int totales = CamaService.contarCapacidadTotal();
+
+            if (totales > 0 && ocupadas >= totales) {
+                System.out.println("Aforo completo para la fecha " + fechaControl + ": no se pueden añadir más huéspedes.");
+                return;
+            }
+        }
 
         try {
             // 1️⃣ Volcar datos del formulario al modelo
@@ -486,7 +518,7 @@ public class MainController {
                 estanciaActual.setIdAlbergue(1);
             }
 
-            if (estanciaActual.getEstadoEstancia() == null 
+            if (estanciaActual.getEstadoEstancia() == null
                     || estanciaActual.getEstadoEstancia().isBlank()) {
                 estanciaActual.setEstadoEstancia("ACTIVA");
             }
@@ -581,6 +613,26 @@ public class MainController {
             }
         });
         
+    }
+    
+    @FXML
+    private void onNuevoAlbergue() {
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                    getClass().getResource("/ui/nuevo_albergue.fxml")
+            );
+
+            javafx.scene.Scene scene = new javafx.scene.Scene(loader.load());
+
+            javafx.stage.Stage stage = new javafx.stage.Stage();
+            stage.setTitle("Nuevo albergue");
+            stage.setScene(scene);
+            stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+            stage.showAndWait();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void instalarValidador(TextField tf, Runnable validacion) {
@@ -1603,4 +1655,35 @@ public class MainController {
         tfTipoDocumento.setFocusTraversable(!bloquear);
         tfNumeroDocumento.setFocusTraversable(!bloquear);
     }
+    
+    private void refrescarIndicadorPlazas() {
+        try {
+            int ocupadas = EstanciaService.contarPlazasOcupadasEnFecha(1, fechaLista);
+            int totales = CamaService.contarCapacidadTotal();
+
+            lblPlazas.setText("Plazas ocupadas: " + ocupadas + " / " + totales);
+
+            if (totales > 0 && ocupadas >= totales) {
+                lblPlazas.setStyle("-fx-text-fill: #b22222;");
+            } else if (totales > 0 && ocupadas >= Math.max(1, totales - 3)) {
+                lblPlazas.setStyle("-fx-text-fill: #d97917;");
+            } else {
+                lblPlazas.setStyle("");
+            }
+
+        } catch (DatabaseException e) {
+            lblPlazas.setText("Plazas ocupadas: -- / --");
+            lblPlazas.setStyle("-fx-text-fill: #d97917;");
+        }
+    }
+    
+    private boolean esEstanciaNueva() {
+        return estanciaActual == null || estanciaActual.getIdEstancia() == 0;
+    }
+    
+ // FUTURO:
+ // Cuando existan preregistros desde la nube, el indicador de plazas deberá
+ // decidir si los pendientes/restervas descuentan o no aforo según la
+ // configuración del albergue (acepta reservas / no acepta reservas).
+    
 }

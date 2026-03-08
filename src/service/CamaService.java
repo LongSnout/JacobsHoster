@@ -76,6 +76,29 @@ public class CamaService {
             throw new DatabaseException("Error refrescando estados de camas para hoy=" + hoy, e);
         }
     }
+    
+    public static int contarCapacidadTotal() {
+        String sql = """
+            SELECT COUNT(*)
+            FROM cama
+            WHERE estado <> 'BLOQUEADA'
+            """;
+
+        try (Connection conn = DBManager.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql);
+             java.sql.ResultSet rs = ps.executeQuery()) {
+
+            return rs.next() ? rs.getInt(1) : 0;
+
+        } catch (SQLException e) {
+            throw new DatabaseException("Error contando capacidad total de camas", e);
+        }
+    }
+    
+    
+    
+    
+    
 }
 
 

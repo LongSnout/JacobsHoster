@@ -355,6 +355,32 @@ public class EstanciaDAO {
         return null;
     }
     
+    public static int contarOcupadasEnFecha(Connection conn, int idAlbergue, String fechaISO) throws SQLException {
+
+        String sql = """
+            SELECT COUNT(DISTINCT e.id_peregrino)
+            FROM estancia e
+            WHERE e.id_albergue = ?
+              AND e.estado_estancia <> 'CANCELADA'
+              AND e.fecha_entrada <= ?
+              AND (
+                    (e.fecha_salida_real IS NULL AND (e.fecha_salida_prevista IS NULL OR e.fecha_salida_prevista > ?))
+                    OR
+                    (e.fecha_salida_real IS NOT NULL AND e.fecha_salida_real > ?)
+                  )
+            """;
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idAlbergue);
+            ps.setString(2, fechaISO);
+            ps.setString(3, fechaISO);
+            ps.setString(4, fechaISO);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() ? rs.getInt(1) : 0;
+            }
+        }
+    }
     
 }
 

@@ -1,6 +1,8 @@
 /* filepath: c:\Users\Berto\Desktop\Desarrollo de Aplicaciones Multiplataforma\1Curso 2025-2026\Ejercicios Eclipse\JacobsHoster\src\ui\styles\app.css */
 
+
 /*Login Screen Styles*/
+
 
 /*login background*/
 .login-root {
@@ -313,6 +315,17 @@
   -fx-background-color: #55c6e5;
 }
 
+.context-menu {
+    -fx-background-color: white;
+}
+
+.context-menu .menu-item:hover {
+    -fx-background-color: #d0e4ff;
+}
+
+.context-menu .menu-item .label {
+    -fx-text-fill: black;
+}
 
 /* ---------- Estados de validación (para luego) ---------- */
 .field-error {

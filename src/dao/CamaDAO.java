@@ -149,6 +149,29 @@ public class CamaDAO {
 	}
 
 	
+	public static int contarTodas(Connection conn) throws SQLException {
+	    String sql = "SELECT COUNT(*) FROM cama";
+
+	    try (PreparedStatement ps = conn.prepareStatement(sql);
+	         ResultSet rs = ps.executeQuery()) {
+	        return rs.next() ? rs.getInt(1) : 0;
+	    }
+	}
+	
+	public static int contarDisponiblesParaCapacidad(Connection conn) throws SQLException {
+	    String sql = """
+	        SELECT COUNT(*)
+	        FROM cama
+	        WHERE estado <> 'BLOQUEADA'
+	        """;
+
+	    try (PreparedStatement ps = conn.prepareStatement(sql);
+	         ResultSet rs = ps.executeQuery()) {
+	        return rs.next() ? rs.getInt(1) : 0;
+	    }
+	}
+	
+	
 }
 
 

@@ -28,11 +28,12 @@
    <top>
       <MenuBar>
         <menus>
-          <Menu mnemonicParsing="false" text="Archivo">
-            <items>
-              <MenuItem mnemonicParsing="false" text="Close" />
-            </items>
-          </Menu>
+          	<Menu mnemonicParsing="false" text="Archivo">
+    			<items>
+        			<MenuItem mnemonicParsing="false" text="Nuevo albergue" onAction="#onNuevoAlbergue" />
+        			<MenuItem mnemonicParsing="false" text="Close" />
+    			</items>
+	    	</Menu>
           <Menu mnemonicParsing="false" text="Edición">
             <items>
               <MenuItem mnemonicParsing="false" text="Delete" />
@@ -82,6 +83,8 @@
 						<TextField fx:id="tfBuscarHuesped" promptText="Buscar (nombre, DNI...)" />
 
                         <ListView fx:id="lvHuespedes" VBox.vgrow="ALWAYS" />
+                        
+                        <Label fx:id="lblPlazas" text="Plazas ocupadas: 0 / 0" />
 
                         <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="btn-exportar" text="Exportar XML Ministerio" VBox.vgrow="NEVER" />
                       </children>

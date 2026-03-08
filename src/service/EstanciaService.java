@@ -166,7 +166,46 @@ public class EstanciaService {
         }
     }
     
+    public static int contarPlazasOcupadasEnFecha(int idAlbergue, LocalDate fecha) {
+        try (Connection conn = DBManager.getConnection()) {
+            return EstanciaDAO.contarOcupadasEnFecha(conn, idAlbergue, fecha.toString());
+        } catch (SQLException e) {
+            throw new DatabaseException("Error al contar plazas ocupadas en fecha " + fecha, e);
+        }
+    }
     
+    
+    
+    /*
+     * FUTURO (nube / preregistro / reservas):
+     *
+     * Cuando se implemente la sincronización con la nube y los peregrinos puedan
+     * enviar sus datos por adelantado, habrá que distinguir entre:
+     *
+     * - PREREGISTRO / PENDIENTE_CONFIRMAR
+     * - RESERVADA
+     * - ACTIVA
+     * - FINALIZADA
+     * - CANCELADA
+     *
+     * Regla prevista:
+     *
+     * 1) Si el albergue NO acepta reservas:
+     *    - los preregistros enviados desde la nube NO descuentan plaza
+     *    - solo sirven como ficha previa / pendiente de confirmar
+     *
+     * 2) Si el albergue SÍ acepta reservas:
+     *    - las reservas confirmadas sí descuentan plaza aunque el huésped
+     *      aún no haya hecho check-in presencial
+     *
+     * 3) En la interfaz:
+     *    - los preregistros/pedientes deberían mostrarse en gris
+     *    - las estancias activas en color normal
+     *
+     * IMPORTANTE:
+     * El cálculo de aforo no debe basarse solo en la lista visual, sino en el
+     * estado real de negocio de cada estancia/reserva.
+     */
     
 }
 
