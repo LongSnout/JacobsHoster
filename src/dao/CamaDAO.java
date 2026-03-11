@@ -171,6 +171,53 @@ public class CamaDAO {
 	    }
 	}
 	
+	public static Cama obtenerPorHabitacionYNumeroCama(Connection conn, int numeroHabitacion, int numeroCama) throws SQLException {
+
+	    String sql = """
+	        SELECT *
+	        FROM cama
+	        WHERE numero_habitacion = ?
+	        ORDER BY id_cama ASC
+	        LIMIT 1 OFFSET ?
+	        """;
+
+	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+	        ps.setInt(1, numeroHabitacion);
+	        ps.setInt(2, numeroCama - 1);
+
+	        try (ResultSet rs = ps.executeQuery()) {
+	            if (rs.next()) {
+	                return mapear(rs);
+	            }
+	        }
+	    }
+
+	    return null;
+	}
+	
+	public static int obtenerNumeroCamaDentroDeHabitacion(Connection conn, int idCama) throws SQLException {
+
+	    Cama camaActual = obtenerPorId(conn, idCama);
+	    if (camaActual == null) return 0;
+
+	    String sql = """
+	        SELECT COUNT(*)
+	        FROM cama
+	        WHERE numero_habitacion = ?
+	          AND id_cama <= ?
+	        """;
+
+	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+	        ps.setInt(1, camaActual.getNumeroHabitacion());
+	        ps.setInt(2, idCama);
+
+	        try (ResultSet rs = ps.executeQuery()) {
+	            return rs.next() ? rs.getInt(1) : 0;
+	        }
+	    }
+	}
+	
+	
 	
 }
 

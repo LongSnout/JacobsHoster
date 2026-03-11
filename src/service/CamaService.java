@@ -2,9 +2,11 @@ package service;
 
 import db.DBManager;
 import exception.DatabaseException;
+import model.Cama;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 
@@ -95,8 +97,48 @@ public class CamaService {
         }
     }
     
+    public static int obtenerNumeroCamaDentroDeHabitacion(int idCama) {
+        try (Connection conn = DBManager.getConnection()) {
+
+            Cama camaActual = dao.CamaDAO.obtenerPorId(conn, idCama);
+            if (camaActual == null) return 0;
+
+            String sql = """
+                SELECT COUNT(*)
+                FROM cama
+                WHERE numero_habitacion = ?
+                  AND id_cama <= ?
+                """;
+
+            try (PreparedStatement ps = conn.prepareStatement(sql)) {
+                ps.setInt(1, camaActual.getNumeroHabitacion());
+                ps.setInt(2, idCama);
+
+                try (ResultSet rs = ps.executeQuery()) {
+                    return rs.next() ? rs.getInt(1) : 0;
+                }
+            }
+
+        } catch (SQLException e) {
+            throw new DatabaseException("Error obteniendo número de cama dentro de la habitación", e);
+        }
+    }
     
+    public static model.Cama obtenerPorId(int idCama) {
+        try (Connection conn = DBManager.getConnection()) {
+            return dao.CamaDAO.obtenerPorId(conn, idCama);
+        } catch (SQLException e) {
+            throw new DatabaseException("Error obteniendo cama por id=" + idCama, e);
+        }
+    }
     
+    public static Cama obtenerPorHabitacionYNumeroCama(int numeroHabitacion, int numeroCama) {
+        try (Connection conn = DBManager.getConnection()) {
+            return dao.CamaDAO.obtenerPorHabitacionYNumeroCama(conn, numeroHabitacion, numeroCama);
+        } catch (SQLException e) {
+            throw new DatabaseException("Error buscando cama por habitación y número de cama", e);
+        }
+    }
     
     
 }

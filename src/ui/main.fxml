@@ -216,12 +216,21 @@
 
                                         <Label focusTraversable="false" styleClass="ficha-label" text="Nº personas (contrato)" GridPane.columnIndex="0" GridPane.rowIndex="6" />
                                         <TextField fx:id="tfNumPersonas" maxWidth="1.7976931348623157E308" promptText="1" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                                        
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="Nº habitación" GridPane.columnIndex="0" GridPane.rowIndex="7" />
+										<TextField fx:id="tfNumeroHabitacion" maxWidth="1.7976931348623157E308" promptText="Ej: 3" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+
+										<Label focusTraversable="false" styleClass="ficha-label" text="Nº cama" GridPane.columnIndex="0" GridPane.rowIndex="8" />
+										<TextField fx:id="tfNumeroCama" maxWidth="1.7976931348623157E308" promptText="Ej: 2" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+                                        
                                       </children>
 
                                       <rowConstraints>
-                                        <RowConstraints /><RowConstraints /><RowConstraints /><RowConstraints />
-                                        <RowConstraints /><RowConstraints /><RowConstraints />
-                                      </rowConstraints>
+    									<RowConstraints /><RowConstraints /><RowConstraints /><RowConstraints />
+    									<RowConstraints /><RowConstraints /><RowConstraints /><RowConstraints />
+    									<RowConstraints />
+    								  </rowConstraints>
+									
                                     </GridPane>
                                   </children>
                                 </VBox>

@@ -86,7 +86,15 @@ public class MainController {
     @FXML private javafx.scene.control.DatePicker dpFechaLista;
     @FXML private TextField tfBuscarHuesped;
     
+    
+    //Plazas y capacidad
     @FXML private Label lblPlazas;
+    @FXML private TextField tfNumHabitaciones;
+    @FXML private javafx.scene.control.CheckBox cbInternet;
+    @FXML private TextField tfTamGrupo;
+    @FXML private TextField tfNumPersonas;
+    @FXML private TextField tfNumeroHabitacion;
+    @FXML private TextField tfNumeroCama;
     
 
     private LocalDate fechaLista = LocalDate.now();
@@ -289,6 +297,7 @@ public class MainController {
         aplicarReglaMunicipio();
         
         cargarEstanciaDe(p);
+        cargarHabitacionYCamaEnFicha();
         
         bloquearDocumentoSiExistente(true);
     }
@@ -380,6 +389,48 @@ public class MainController {
         if (estanciaActual.getNumeroHabitaciones() == 0) {
             estanciaActual.setNumeroHabitaciones(1);
         }
+        
+     // Gestión de asignación manual de cama/habitación
+        String txtHab = trim(tfNumeroHabitacion);
+        String txtCama = trim(tfNumeroCama);
+
+        // Caso 1: ambos vacíos -> conservar cama actual si ya existía
+        if (txtHab.isBlank() && txtCama.isBlank()) {
+            // No tocamos estanciaActual.idCama
+        	// FUTURO:
+        	//TODO:
+        	// Si la estancia es nueva y no tiene cama asignada, aquí entrará la lógica de autoasignación.
+        	// Criterios previstos:
+        	// - no asignar camas inexistentes
+        	// - evitar mezclar hombres con habitación de mujeres
+        	// - priorizar grupos juntos
+        	// - intentar llenar habitaciones completas si conviene
+        	// - opcionalmente minimizar número de habitaciones abiertas
+        }
+        // Caso 2: ambos rellenos -> intentar reasignar
+        else if (!txtHab.isBlank() && !txtCama.isBlank()) {
+            try {
+                int numeroHabitacion = Integer.parseInt(txtHab);
+                int numeroCama = Integer.parseInt(txtCama);
+
+                model.Cama cama = CamaService.obtenerPorHabitacionYNumeroCama(numeroHabitacion, numeroCama);
+
+                if (cama != null) {
+                    estanciaActual.setIdCama(cama.getIdCama());
+                } else {
+                    // Habitación/cama no válida: de momento no machacamos la cama existente
+                    // Más adelante aquí se puede marcar error visual
+                }
+
+            } catch (NumberFormatException e) {
+                // Si meten texto raro, tampoco machacamos la cama existente
+            }
+        }
+        // Caso 3: uno relleno y otro no -> no tocar la cama existente
+        else {
+            // Incompleto: no hacemos nada para no romper asignaciones previas
+            // Más adelante aquí se puede marcar error visual
+        }
     }
 
     private void nuevaFicha() {
@@ -390,6 +441,8 @@ public class MainController {
         estanciaActual.setIdAlbergue(1);
         estanciaActual.setEstadoEstancia("ACTIVA");
         estanciaActual.setNumeroHabitaciones(1);
+        
+        
         
         bloquearDocumentoSiExistente(false);
         
@@ -431,6 +484,8 @@ public class MainController {
         tfTelefono2.setText("");
         tfCorreo.setText("");
         tfParentesco.setText("");
+        tfNumeroHabitacion.setText("");
+        tfNumeroCama.setText("");
 
         // Aplica regla municipio tras setear país
         aplicarReglaMunicipio();
@@ -1750,6 +1805,31 @@ public class MainController {
 
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+    
+    private void cargarHabitacionYCamaEnFicha() {
+
+        tfNumeroHabitacion.setText("");
+        tfNumeroCama.setText("");
+
+        if (estanciaActual == null || estanciaActual.getIdCama() == null) {
+            return;
+        }
+
+        try {
+            model.Cama cama = CamaService.obtenerPorId(estanciaActual.getIdCama());
+            if (cama == null) return;
+
+            tfNumeroHabitacion.setText(String.valueOf(cama.getNumeroHabitacion()));
+
+            int numeroCama = CamaService.obtenerNumeroCamaDentroDeHabitacion(cama.getIdCama());
+            if (numeroCama > 0) {
+                tfNumeroCama.setText(String.valueOf(numeroCama));
+            }
+
+        } catch (Exception e) {
+            System.out.println("No se pudo cargar habitación/cama en ficha: " + e.getMessage());
         }
     }
     
