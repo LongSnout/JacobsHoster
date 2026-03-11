@@ -127,4 +127,65 @@ public class HabitacionDAO {
 
 		return h;
 	}
+	
+	public static List<Habitacion> listarActivas(Connection conn) throws SQLException {
+
+	    String sql = """
+	            SELECT *
+	            FROM habitacion
+	            WHERE estado_habitacion = 'ACTIVA'
+	            ORDER BY numero_habitacion ASC
+	            """;
+
+	    List<Habitacion> lista = new ArrayList<>();
+
+	    try (PreparedStatement ps = conn.prepareStatement(sql);
+	         ResultSet rs = ps.executeQuery()) {
+
+	        while (rs.next()) {
+	            lista.add(mapear(rs));
+	        }
+	    }
+
+	    return lista;
+	}
+
+	public static void actualizarEstado(Connection conn, int numeroHabitacion, String estado) throws SQLException {
+
+	    String sql = """
+	            UPDATE habitacion
+	            SET estado_habitacion = ?
+	            WHERE numero_habitacion = ?
+	            """;
+
+	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+	        ps.setString(1, estado);
+	        ps.setInt(2, numeroHabitacion);
+	        ps.executeUpdate();
+	    }
+	}
+
+	public static List<Habitacion> listarDesdeNumero(Connection conn, int numeroHabitacionDesde) throws SQLException {
+
+	    String sql = """
+	            SELECT *
+	            FROM habitacion
+	            WHERE numero_habitacion >= ?
+	            ORDER BY numero_habitacion ASC
+	            """;
+
+	    List<Habitacion> lista = new ArrayList<>();
+
+	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+	        ps.setInt(1, numeroHabitacionDesde);
+
+	        try (ResultSet rs = ps.executeQuery()) {
+	            while (rs.next()) {
+	                lista.add(mapear(rs));
+	            }
+	        }
+	    }
+
+	    return lista;
+	}
 }

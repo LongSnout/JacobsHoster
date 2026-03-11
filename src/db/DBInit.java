@@ -26,6 +26,7 @@ public class DBInit {
             if (!existenTablasMinimas(conn)) {
                 throw new DatabaseException("La base de datos no tiene las tablas esperadas. ¿Ruta correcta?");
             }
+            asegurarColumnasCama(conn);
 
             // 2) Semilla: albergue
             if (!AlbergueDAO.existeAlbergue(conn)) {
@@ -70,6 +71,66 @@ public class DBInit {
             return rs.next() && rs.getInt(1) > 0;
         }
     }
+    
+    private static void asegurarColumnasCama(Connection conn) throws Exception {
+        if (!existeColumna(conn, "cama", "numero_cama")) {
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "ALTER TABLE cama ADD COLUMN numero_cama INTEGER")) {
+                ps.executeUpdate();
+            }
+        }
+
+        if (!existeColumna(conn, "cama", "activa")) {
+            try (PreparedStatement ps = conn.prepareStatement(
+                    "ALTER TABLE cama ADD COLUMN activa INTEGER NOT NULL DEFAULT 1")) {
+                ps.executeUpdate();
+            }
+        }
+
+        // Rellenar numero_cama si está vacío
+        try (PreparedStatement ps = conn.prepareStatement("""
+                UPDATE cama
+                SET numero_cama = (
+                    SELECT COUNT(*)
+                    FROM cama c2
+                    WHERE c2.numero_habitacion = cama.numero_habitacion
+                      AND c2.rowid <= cama.rowid
+                )
+                WHERE numero_cama IS NULL
+                """)) {
+            ps.executeUpdate();
+        }
+
+        try (PreparedStatement ps = conn.prepareStatement("""
+                CREATE UNIQUE INDEX IF NOT EXISTS idx_cama_habitacion_numero_cama
+                ON cama (numero_habitacion, numero_cama)
+                """)) {
+            ps.executeUpdate();
+        }
+
+        try (PreparedStatement ps = conn.prepareStatement("""
+                CREATE INDEX IF NOT EXISTS idx_cama_habitacion_activa
+                ON cama (numero_habitacion, activa)
+                """)) {
+            ps.executeUpdate();
+        }
+    }
+
+    private static boolean existeColumna(Connection conn, String tabla, String columna) throws Exception {
+        String sql = "PRAGMA table_info(" + tabla + ")";
+        try (PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                String nombre = rs.getString("name");
+                if (columna.equalsIgnoreCase(nombre)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+    
+    
 }
 
 

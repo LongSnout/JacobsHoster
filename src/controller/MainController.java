@@ -1751,7 +1751,7 @@ public class MainController {
                     getClass().getResource("/ui/nuevo_albergue.fxml")
             );
 
-            javafx.scene.Scene scene = new javafx.scene.Scene(loader.load());
+            javafx.scene.Scene scene = new javafx.scene.Scene(loader.load(), 620, 780);
 
             NuevoAlbergueController controller = loader.getController();
             controller.cargarModoEdicion(actual);
@@ -1822,11 +1822,7 @@ public class MainController {
             if (cama == null) return;
 
             tfNumeroHabitacion.setText(String.valueOf(cama.getNumeroHabitacion()));
-
-            int numeroCama = CamaService.obtenerNumeroCamaDentroDeHabitacion(cama.getIdCama());
-            if (numeroCama > 0) {
-                tfNumeroCama.setText(String.valueOf(numeroCama));
-            }
+            tfNumeroCama.setText(String.valueOf(cama.getNumeroCama()));
 
         } catch (Exception e) {
             System.out.println("No se pudo cargar habitación/cama en ficha: " + e.getMessage());

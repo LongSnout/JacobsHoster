@@ -14,18 +14,22 @@ public class CamaDAO {
 
 	public static void insertar(Connection conn, Cama c) throws SQLException {
 
-		String sql = """
-				INSERT INTO cama (
-				    numero_habitacion,
-				    estado
-				) VALUES (?, ?)
-				""";
+	    String sql = """
+	            INSERT INTO cama (
+	                numero_habitacion,
+	                numero_cama,
+	                estado,
+	                activa
+	            ) VALUES (?, ?, ?, ?)
+	            """;
 
-		try (PreparedStatement ps = conn.prepareStatement(sql)) {
-			ps.setInt(1, c.getNumeroHabitacion());
-			ps.setString(2, c.getEstado());
-			ps.executeUpdate();
-		}
+	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+	        ps.setInt(1, c.getNumeroHabitacion());
+	        ps.setInt(2, c.getNumeroCama());
+	        ps.setString(3, c.getEstado());
+	        ps.setInt(4, c.isActiva() ? 1 : 0);
+	        ps.executeUpdate();
+	    }
 	}
 
 
@@ -76,76 +80,89 @@ public class CamaDAO {
 
 	public static List<Cama> listarPorHabitacion(Connection conn, int numeroHabitacion) throws SQLException {
 
-		String sql = """
-				SELECT * FROM cama
-				WHERE numero_habitacion = ?
-				ORDER BY id_cama ASC
-				""";
+	    String sql = """
+	            SELECT *
+	            FROM cama
+	            WHERE numero_habitacion = ?
+	              AND activa = 1
+	            ORDER BY numero_cama ASC
+	            """;
 
-		List<Cama> lista = new ArrayList<>();
+	    List<Cama> lista = new ArrayList<>();
 
-		try (PreparedStatement ps = conn.prepareStatement(sql)) {
-			ps.setInt(1, numeroHabitacion);
+	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+	        ps.setInt(1, numeroHabitacion);
 
-			try (ResultSet rs = ps.executeQuery()) {
-				while (rs.next()) {
-					lista.add(mapear(rs));
-				}
-			}
-		}
+	        try (ResultSet rs = ps.executeQuery()) {
+	            while (rs.next()) {
+	                lista.add(mapear(rs));
+	            }
+	        }
+	    }
 
-		return lista;
+	    return lista;
 	}
+
 
 
 	public static List<Cama> listarTodas(Connection conn) throws SQLException {
 
-		String sql = "SELECT * FROM cama ORDER BY numero_habitacion ASC, id_cama ASC";
+	    String sql = """
+	            SELECT *
+	            FROM cama
+	            WHERE activa = 1
+	            ORDER BY numero_habitacion ASC, numero_cama ASC
+	            """;
 
-		List<Cama> lista = new ArrayList<>();
+	    List<Cama> lista = new ArrayList<>();
 
-		try (PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()) {
+	    try (PreparedStatement ps = conn.prepareStatement(sql);
+	         ResultSet rs = ps.executeQuery()) {
 
-			while (rs.next()) {
-				lista.add(mapear(rs));
-			}
-		}
+	        while (rs.next()) {
+	            lista.add(mapear(rs));
+	        }
+	    }
 
-		return lista;
+	    return lista;
 	}
 
 
 	private static Cama mapear(ResultSet rs) throws SQLException {
 
-		Cama c = new Cama();
+	    Cama c = new Cama();
 
-		c.setIdCama(rs.getInt("id_cama"));
-		c.setNumeroHabitacion(rs.getInt("numero_habitacion"));
-		c.setEstado(rs.getString("estado"));
+	    c.setIdCama(rs.getInt("id_cama"));
+	    c.setNumeroHabitacion(rs.getInt("numero_habitacion"));
+	    c.setNumeroCama(rs.getInt("numero_cama"));
+	    c.setEstado(rs.getString("estado"));
+	    c.setActiva(rs.getInt("activa") == 1);
 
-		return c;
+	    return c;
 	}
 
 
-	public static void eliminarCamasLibres(Connection conn, int numeroHabitacion, int limite) throws SQLException {
+	public static void desactivarCamasLibres(Connection conn, int numeroHabitacion, int limite) throws SQLException {
 
-		String sql = """
-				DELETE FROM cama
-				WHERE id_cama IN (
-				    SELECT id_cama
-				    FROM cama
-				    WHERE numero_habitacion = ?
-				      AND estado = 'LIBRE'
-				    ORDER BY id_cama DESC
-				    LIMIT ?
-				)
-				""";
+	    String sql = """
+	            UPDATE cama
+	            SET activa = 0
+	            WHERE id_cama IN (
+	                SELECT id_cama
+	                FROM cama
+	                WHERE numero_habitacion = ?
+	                  AND activa = 1
+	                  AND estado = 'LIBRE'
+	                ORDER BY numero_cama DESC
+	                LIMIT ?
+	            )
+	            """;
 
-		try (PreparedStatement ps = conn.prepareStatement(sql)) {
-			ps.setInt(1, numeroHabitacion);
-			ps.setInt(2, limite);
-			ps.executeUpdate();
-		}
+	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+	        ps.setInt(1, numeroHabitacion);
+	        ps.setInt(2, limite);
+	        ps.executeUpdate();
+	    }
 	}
 
 	
@@ -162,7 +179,8 @@ public class CamaDAO {
 	    String sql = """
 	        SELECT COUNT(*)
 	        FROM cama
-	        WHERE estado <> 'BLOQUEADA'
+	        WHERE activa = 1
+	          AND estado <> 'BLOQUEADA'
 	        """;
 
 	    try (PreparedStatement ps = conn.prepareStatement(sql);
@@ -177,13 +195,13 @@ public class CamaDAO {
 	        SELECT *
 	        FROM cama
 	        WHERE numero_habitacion = ?
-	        ORDER BY id_cama ASC
-	        LIMIT 1 OFFSET ?
+	          AND numero_cama = ?
+	          AND activa = 1
 	        """;
 
 	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
 	        ps.setInt(1, numeroHabitacion);
-	        ps.setInt(2, numeroCama - 1);
+	        ps.setInt(2, numeroCama);
 
 	        try (ResultSet rs = ps.executeQuery()) {
 	            if (rs.next()) {
@@ -197,27 +215,148 @@ public class CamaDAO {
 	
 	public static int obtenerNumeroCamaDentroDeHabitacion(Connection conn, int idCama) throws SQLException {
 
-	    Cama camaActual = obtenerPorId(conn, idCama);
-	    if (camaActual == null) return 0;
-
 	    String sql = """
-	        SELECT COUNT(*)
+	        SELECT numero_cama
 	        FROM cama
-	        WHERE numero_habitacion = ?
-	          AND id_cama <= ?
+	        WHERE id_cama = ?
 	        """;
 
 	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
-	        ps.setInt(1, camaActual.getNumeroHabitacion());
-	        ps.setInt(2, idCama);
+	        ps.setInt(1, idCama);
 
 	        try (ResultSet rs = ps.executeQuery()) {
-	            return rs.next() ? rs.getInt(1) : 0;
+	            return rs.next() ? rs.getInt("numero_cama") : 0;
 	        }
 	    }
 	}
 	
-	
+	public static void activarCama(Connection conn, int numeroHabitacion, int numeroCama) throws SQLException {
+
+	    String sql = """
+	            UPDATE cama
+	            SET activa = 1
+	            WHERE numero_habitacion = ?
+	              AND numero_cama = ?
+	            """;
+
+	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+	        ps.setInt(1, numeroHabitacion);
+	        ps.setInt(2, numeroCama);
+	        ps.executeUpdate();
+	    }
+	}
+
+	public static void activarCamasHasta(Connection conn, int numeroHabitacion, int numeroCamaMax) throws SQLException {
+
+	    String sql = """
+	            UPDATE cama
+	            SET activa = 1
+	            WHERE numero_habitacion = ?
+	              AND numero_cama <= ?
+	            """;
+
+	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+	        ps.setInt(1, numeroHabitacion);
+	        ps.setInt(2, numeroCamaMax);
+	        ps.executeUpdate();
+	    }
+	}
+
+	public static void desactivarCamasDesde(Connection conn, int numeroHabitacion, int desdeNumeroCama) throws SQLException {
+
+	    String sql = """
+	            UPDATE cama
+	            SET activa = 0
+	            WHERE numero_habitacion = ?
+	              AND numero_cama >= ?
+	              AND activa = 1
+	              AND estado = 'LIBRE'
+	            """;
+
+	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+	        ps.setInt(1, numeroHabitacion);
+	        ps.setInt(2, desdeNumeroCama);
+	        ps.executeUpdate();
+	    }
+	}
+
+	public static void desactivarTodasLasCamasDeHabitacion(Connection conn, int numeroHabitacion) throws SQLException {
+
+	    String sql = """
+	            UPDATE cama
+	            SET activa = 0
+	            WHERE numero_habitacion = ?
+	              AND activa = 1
+	              AND estado = 'LIBRE'
+	            """;
+
+	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+	        ps.setInt(1, numeroHabitacion);
+	        ps.executeUpdate();
+	    }
+	}
+
+	public static boolean existeCama(Connection conn, int numeroHabitacion, int numeroCama) throws SQLException {
+
+	    String sql = """
+	            SELECT 1
+	            FROM cama
+	            WHERE numero_habitacion = ?
+	              AND numero_cama = ?
+	            LIMIT 1
+	            """;
+
+	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+	        ps.setInt(1, numeroHabitacion);
+	        ps.setInt(2, numeroCama);
+
+	        try (ResultSet rs = ps.executeQuery()) {
+	            return rs.next();
+	        }
+	    }
+	}
+
+	public static boolean hayCamasActivasOcupadasDesde(Connection conn, int numeroHabitacion, int desdeNumeroCama) throws SQLException {
+
+	    String sql = """
+	            SELECT 1
+	            FROM cama
+	            WHERE numero_habitacion = ?
+	              AND numero_cama >= ?
+	              AND activa = 1
+	              AND estado = 'OCUPADA'
+	            LIMIT 1
+	            """;
+
+	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+	        ps.setInt(1, numeroHabitacion);
+	        ps.setInt(2, desdeNumeroCama);
+
+	        try (ResultSet rs = ps.executeQuery()) {
+	            return rs.next();
+	        }
+	    }
+	}
+
+	public static boolean hayCamasActivasOcupadasEnHabitacion(Connection conn, int numeroHabitacion) throws SQLException {
+
+	    String sql = """
+	            SELECT 1
+	            FROM cama
+	            WHERE numero_habitacion = ?
+	              AND activa = 1
+	              AND estado = 'OCUPADA'
+	            LIMIT 1
+	            """;
+
+	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+	        ps.setInt(1, numeroHabitacion);
+
+	        try (ResultSet rs = ps.executeQuery()) {
+	            return rs.next();
+	        }
+	    }
+	}
 	
 }
 
