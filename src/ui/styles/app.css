@@ -117,6 +117,16 @@
     -fx-border-color: rgba(0,0,0,0.08);
 }
 
+.ficha-textarea {
+    -fx-background-color: white;
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-border-color: #d6dadc;
+    -fx-border-width: 1.5;
+    -fx-focus-color: #4a7596;
+    -fx-faint-focus-color: transparent;
+}
+
 /* ScrollPane: quitamos “marco feo” */
 .scroll-pane {
     -fx-background-color: transparent;

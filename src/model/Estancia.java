@@ -34,6 +34,19 @@ public class Estancia {
 
     private String referenciaContrato;
     private String estadoEstancia;
+    
+    private String lugarInicioCamino;
+    private String ultimoAlbergue;
+    private String caminoDestino;
+    private String observaciones;
+    
+    // Datos de pago
+    private Integer numPersonasContrato;
+    private String tipoPago;
+    private String titularPago;
+    private String caducidadTarjeta;
+    private String fechaPago;
+    private String medioPago;
 
     public Estancia() {
     }
@@ -149,8 +162,91 @@ public class Estancia {
     public void setEstadoEstancia(String estadoEstancia) {
         this.estadoEstancia = estadoEstancia;
     }
+    
+    public String getLugarInicioCamino() {
+        return lugarInicioCamino;
+    }
 
-    @Override
+    public void setLugarInicioCamino(String lugarInicioCamino) {
+        this.lugarInicioCamino = lugarInicioCamino;
+    }
+
+    public String getUltimoAlbergue() {
+        return ultimoAlbergue;
+    }
+
+    public void setUltimoAlbergue(String ultimoAlbergue) {
+        this.ultimoAlbergue = ultimoAlbergue;
+    }
+
+    public String getCaminoDestino() {
+        return caminoDestino;
+    }
+
+    public void setCaminoDestino(String caminoDestino) {
+        this.caminoDestino = caminoDestino;
+    }
+    
+    
+
+    public Integer getNumPersonasContrato() {
+        return numPersonasContrato;
+    }
+
+    public void setNumPersonasContrato(Integer numPersonasContrato) {
+        this.numPersonasContrato = numPersonasContrato;
+    }
+
+	public String getTipoPago() {
+		return tipoPago;
+	}
+
+	public void setTipoPago(String tipoPago) {
+		this.tipoPago = tipoPago;
+	}
+
+	public String getTitularPago() {
+		return titularPago;
+	}
+
+	public void setTitularPago(String titularPago) {
+		this.titularPago = titularPago;
+	}
+
+	public String getCaducidadTarjeta() {
+		return caducidadTarjeta;
+	}
+
+	public void setCaducidadTarjeta(String caducidadTarjeta) {
+		this.caducidadTarjeta = caducidadTarjeta;
+	}
+
+
+	public String getFechaPago() {
+		return fechaPago;
+	}
+
+	public void setFechaPago(String fechaPago) {
+		this.fechaPago = fechaPago;
+	}
+	
+	public String getMedioPago() {
+	    return medioPago;
+	}
+
+	public void setMedioPago(String medioPago) {
+	    this.medioPago = medioPago;
+	}
+	
+	public String getObservaciones() {
+	    return observaciones;
+	}
+
+	public void setObservaciones(String observaciones) {
+	    this.observaciones = observaciones;
+	}
+
+	@Override
     public String toString() {
         return "Estancia [idEstancia=" + idEstancia
                 + ", idEnvioXml=" + idEnvioXml
@@ -160,7 +256,21 @@ public class Estancia {
                 + ", fechaEntrada=" + fechaEntrada
                 + ", fechaSalidaPrevista=" + fechaSalidaPrevista
                 + ", fechaSalidaReal=" + fechaSalidaReal
-                + ", estadoEstancia=" + estadoEstancia + "]";
+                + ", estadoEstancia=" + estadoEstancia + "]"
+        		+ ", numeroHabitaciones=" + numeroHabitaciones
+				+ ", idGrupo=" + idGrupo
+				+ ", internetIncluido=" + internetIncluido
+				+ ", referenciaContrato=" + referenciaContrato
+				+ ", lugarInicioCamino=" + lugarInicioCamino
+				+ ", ultimoAlbergue=" + ultimoAlbergue
+				+ ", caminoDestino=" + caminoDestino
+				+ ", numPersonasContrato=" + numPersonasContrato
+				+ ", tipoPago=" + tipoPago
+				+ ", titularPago=" + titularPago
+				+ ", caducidadTarjeta=" + caducidadTarjeta
+				+ ", fechaPago=" + fechaPago
+				+ ", medioPago=" + medioPago
+				+ "]";
     }
     
     

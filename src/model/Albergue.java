@@ -24,6 +24,12 @@ public class Albergue {
     private String installSecret;
     private String installRegisteredAt;
     
+    private String horaApertura;
+    private String horaCierre;
+    private String fechaAperturaDesde;
+    private String fechaAperturaHasta;
+    private String observacionesApertura;
+    
 
     public Albergue() {
     }
@@ -157,16 +163,71 @@ public class Albergue {
 	public void setInstallRegisteredAt(String installRegisteredAt) { this.installRegisteredAt = installRegisteredAt; }
 
 	
-	
-	
+	public String getHoraApertura() {
+		return horaApertura;
+	}
+
+
+	public void setHoraApertura(String horaApertura) {
+		this.horaApertura = horaApertura;
+	}
+
+
+	public String getHoraCierre() {
+		return horaCierre;
+	}
+
+
+	public void setHoraCierre(String horaCierre) {
+		this.horaCierre = horaCierre;
+	}
+
+
+	public String getFechaAperturaDesde() {
+		return fechaAperturaDesde;
+	}
+
+
+	public void setFechaAperturaDesde(String fechaAperturaDesde) {
+		this.fechaAperturaDesde = fechaAperturaDesde;
+	}
+
+
+	public String getFechaAperturaHasta() {
+		return fechaAperturaHasta;
+	}
+
+
+	public void setFechaAperturaHasta(String fechaAperturaHasta) {
+		this.fechaAperturaHasta = fechaAperturaHasta;
+	}
+
+
+	public String getObservacionesApertura() {
+		return observacionesApertura;
+	}
+
+
+	public void setObservacionesApertura(String observacionesApertura) {
+		this.observacionesApertura = observacionesApertura;
+	}
+
+
 	@Override
 	public String toString() {
 		return "Albergue [idAlbergue=" + idAlbergue + ", nombre=" + nombre + ", direccion=" + direccion + ", municipio="
 				+ municipio + ", provincia=" + provincia + ", pais=" + pais + ", telefono=" + telefono + ", email="
 				+ email + ", codigoEstablecimientoMir=" + codigoEstablecimientoMir + ", idAlbergueNube="
-				+ idAlbergueNube + ", sincronizacionActiva=" + sincronizacionActiva
-				+ ", fechaUltimaSincronizacion=" + fechaUltimaSincronizacion + "]";
+				+ idAlbergueNube + ", apiKey=" + apiKey + ", sincronizacionActiva=" + sincronizacionActiva
+				+ ", fechaUltimaSincronizacion=" + fechaUltimaSincronizacion + ", apiBaseUrl=" + apiBaseUrl
+				+ ", installId=" + installId + ", installSecret=" + installSecret + ", installRegisteredAt="
+				+ installRegisteredAt + ", horaApertura=" + horaApertura + ", horaCierre=" + horaCierre
+				+ ", fechaAperturaDesde=" + fechaAperturaDesde + ", fechaAperturaHasta=" + fechaAperturaHasta
+				+ ", observacionesApertura=" + observacionesApertura + "]";
 	}
+
+
+	
 
 
 }

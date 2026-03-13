@@ -9,10 +9,6 @@ import java.sql.SQLException;
 
 public class AlbergueDAO {
 
-    /**
-     * Inserta un albergue en la BD.
-     * Normalmente solo habrá uno.
-     */
     public static void insertarAlbergue(Connection conn, Albergue albergue) throws SQLException {
 
         String sql = """
@@ -32,9 +28,14 @@ public class AlbergueDAO {
                 api_base_url,
                 install_id,
                 install_secret,
-                install_registered_at
+                install_registered_at,
+                hora_apertura,
+                hora_cierre,
+                fecha_apertura_desde,
+                fecha_apertura_hasta,
+                observaciones_apertura
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """;
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -51,24 +52,25 @@ public class AlbergueDAO {
             ps.setString(9, albergue.getIdAlbergueNube());
             ps.setString(10, albergue.getApiKey());
 
-            // boolean Java → INTEGER SQLite (0/1)
             ps.setInt(11, albergue.isSincronizacionActiva() ? 1 : 0);
 
             ps.setString(12, albergue.getFechaUltimaSincronizacion());
 
-            // Nuevos campos (emparejado / configuración cloud)
             ps.setString(13, albergue.getApiBaseUrl());
             ps.setString(14, albergue.getInstallId());
             ps.setString(15, albergue.getInstallSecret());
             ps.setString(16, albergue.getInstallRegisteredAt());
 
+            ps.setString(17, albergue.getHoraApertura());
+            ps.setString(18, albergue.getHoraCierre());
+            ps.setString(19, albergue.getFechaAperturaDesde());
+            ps.setString(20, albergue.getFechaAperturaHasta());
+            ps.setString(21, albergue.getObservacionesApertura());
+
             ps.executeUpdate();
         }
     }
 
-    /**
-     * Comprueba si ya existe algún albergue en la BD.
-     */
     public static boolean existeAlbergue(Connection conn) throws SQLException {
 
         String sql = "SELECT COUNT(*) FROM albergue";
@@ -80,9 +82,6 @@ public class AlbergueDAO {
         }
     }
 
-    /**
-     * Devuelve el primer albergue encontrado (si existe).
-     */
     public static Albergue obtenerAlbergue(Connection conn) throws SQLException {
 
         String sql = "SELECT * FROM albergue LIMIT 1";
@@ -98,9 +97,6 @@ public class AlbergueDAO {
         return null;
     }
 
-    /**
-     * Actualiza los datos "de ficha" del albergue.
-     */
     public static void actualizarDatosBasicos(Connection conn, Albergue a) throws SQLException {
 
         String sql = """
@@ -112,7 +108,12 @@ public class AlbergueDAO {
                 pais = ?,
                 telefono = ?,
                 email = ?,
-                codigo_establecimiento_mir = ?
+                codigo_establecimiento_mir = ?,
+                hora_apertura = ?,
+                hora_cierre = ?,
+                fecha_apertura_desde = ?,
+                fecha_apertura_hasta = ?,
+                observaciones_apertura = ?
             WHERE id_albergue = ?
             """;
 
@@ -125,14 +126,16 @@ public class AlbergueDAO {
             ps.setString(6, a.getTelefono());
             ps.setString(7, a.getEmail());
             ps.setString(8, a.getCodigoEstablecimientoMir());
-            ps.setInt(9, a.getIdAlbergue());
+            ps.setString(9, a.getHoraApertura());
+            ps.setString(10, a.getHoraCierre());
+            ps.setString(11, a.getFechaAperturaDesde());
+            ps.setString(12, a.getFechaAperturaHasta());
+            ps.setString(13, a.getObservacionesApertura());
+            ps.setInt(14, a.getIdAlbergue());
             ps.executeUpdate();
         }
     }
 
-    /**
-     * Actualiza los datos de sincronización (id nube, api key, estado sincronización, fecha última sincronización).
-     */
     public static void actualizarSync(Connection conn, Albergue a) throws SQLException {
 
         String sql = """
@@ -154,9 +157,6 @@ public class AlbergueDAO {
         }
     }
 
-    /**
-     * guarda las credenciales de emparejado (install_id, install_secret) y la URL base de la API
-     */
     public static void guardarCredencialesInstalacion(Connection conn,
                                                       int idAlbergue,
                                                       String apiBaseUrl,
@@ -183,9 +183,6 @@ public class AlbergueDAO {
         }
     }
 
-    /**
-     * Limpia las credenciales de emparejado (install_id, install_secret) y la URL base de la API, desactivando la sincronización.
-     */
     public static void limpiarCredencialesInstalacion(Connection conn, int idAlbergue) throws SQLException {
 
         String sql = """
@@ -202,10 +199,6 @@ public class AlbergueDAO {
             ps.executeUpdate();
         }
     }
-
-    /*
-     * Mapear un ResultSet a un objeto Albergue.
-     */
 
     private static Albergue mapearAlbergue(ResultSet rs) throws SQLException {
         Albergue a = new Albergue();
@@ -231,9 +224,15 @@ public class AlbergueDAO {
         a.setInstallSecret(rs.getString("install_secret"));
         a.setInstallRegisteredAt(rs.getString("install_registered_at"));
 
+        a.setHoraApertura(rs.getString("hora_apertura"));
+        a.setHoraCierre(rs.getString("hora_cierre"));
+        a.setFechaAperturaDesde(rs.getString("fecha_apertura_desde"));
+        a.setFechaAperturaHasta(rs.getString("fecha_apertura_hasta"));
+        a.setObservacionesApertura(rs.getString("observaciones_apertura"));
+
         return a;
     }
-    
+
     public static void resetearAlbergueActual(Connection conn) throws SQLException {
 
         String sql = """
@@ -255,7 +254,12 @@ public class AlbergueDAO {
                 install_secret = NULL,
                 install_registered_at = NULL,
                 admite_reservas = 0,
-                numeracion_camas_activa = 0
+                numeracion_camas_activa = 0,
+                hora_apertura = NULL,
+                hora_cierre = NULL,
+                fecha_apertura_desde = NULL,
+                fecha_apertura_hasta = NULL,
+                observaciones_apertura = NULL
             WHERE id_albergue = 1
             """;
 
@@ -263,8 +267,4 @@ public class AlbergueDAO {
             ps.executeUpdate();
         }
     }
-    
-    
 }
-
-

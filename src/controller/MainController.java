@@ -18,6 +18,7 @@ import javafx.scene.text.TextFlow;
 import model.Peregrino;
 import service.PeregrinoService;
 
+import javafx.scene.control.TextArea;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.InputStream;
@@ -74,11 +75,18 @@ public class MainController {
     @FXML private TextField tfTelefono2;
     @FXML private TextField tfCorreo;
     @FXML private TextField tfParentesco;
+    @FXML private TextField tfRol;
+    @FXML private TextField tfFechaContrato;
 
-    // Estancia (por ahora solo defaults)
+
+    // Estancia
     @FXML private TextField tfReferencia;
     @FXML private TextField tfFechaEntrada;
     @FXML private TextField tfFechaSalida;
+    @FXML private TextField tfLugarInicioCamino;
+    @FXML private TextField tfUltimoAlbergue;
+    @FXML private TextField tfCaminoDestino;
+    @FXML private TextArea taObservaciones;
 
     // Extras para navegación rápida por fechas
     @FXML private Button btnDiaAnterior;
@@ -91,18 +99,51 @@ public class MainController {
     @FXML private Label lblPlazas;
     @FXML private TextField tfNumHabitaciones;
     @FXML private javafx.scene.control.CheckBox cbInternet;
-    @FXML private TextField tfTamGrupo;
     @FXML private TextField tfNumPersonas;
     @FXML private TextField tfNumeroHabitacion;
     @FXML private TextField tfNumeroCama;
+    
+    // Datos de pago
+    @FXML private TextField tfTipoPago;
+    @FXML private TextField tfTitular;
+    @FXML private TextField tfCaducidadTarjeta;
+    @FXML private TextField tfFechaPago;
+    @FXML private TextField tfSoporteDocumento;
+    @FXML private Button btnCopiarDatosPrevios;
+    @FXML private TextField tfMedioPago;
     
 
     private LocalDate fechaLista = LocalDate.now();
 
     private Peregrino actual;
+    
+    // Variables para almacenar valores previos para la funcionalidad de copiar datos previos al nuevo registro
+    private String previoNacionalidad = "";
+    private String previoPais = "";
+    private String previoFechaEntrada = "";
+    private String previoFechaSalida = "";
+    private String previoNumHabitaciones = "";
+    private String previoNumPersonas = "";
+    private String previoNumeroHabitacion = "";
+    private String previoLugarInicioCamino = "";
+    private String previoUltimoAlbergue = "";
+    private String previoCaminoDestino = "";
+    private String previoTelefono = "";
+    
+    
+    private boolean cargandoFicha = false;
 
     private static final DateTimeFormatter FECHA_HORA = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
+    private static final java.util.Set<String> TIPOS_PAGO_VALIDOS = java.util.Set.of(
+            "DESTI", "EFECT", "TARJT", "PLATF", "TRANS", "MOVIL", "TREG", "OTRO"
+    );
+    
+    private static final java.util.Set<String> PARENTESCOS_VALIDOS = java.util.Set.of(
+            "AB", "BA", "BN", "CY", "CD", "HR", "HJ", "PM", "NI", "SB", "SG", "TI", "YN", "TU", "OT"
+    );
+    
+    
     @FXML
     private void initialize() {
 
@@ -170,6 +211,51 @@ public class MainController {
             actualizarModoBusqueda();
             refrescarLista();
         });
+        
+        Platform.runLater(() -> autoResizeTextArea(taObservaciones));
+        
+    }
+    
+    @FXML
+    private void onCopiarDatosPrevios() {
+
+        boolean noHayNada =
+                previoNacionalidad.isBlank() &&
+                previoPais.isBlank() &&
+                previoFechaEntrada.isBlank() &&
+                previoFechaSalida.isBlank() &&
+                previoNumHabitaciones.isBlank() &&
+                previoNumPersonas.isBlank() &&
+                previoNumeroHabitacion.isBlank() &&
+                previoLugarInicioCamino.isBlank() &&
+                previoUltimoAlbergue.isBlank() &&
+                previoCaminoDestino.isBlank() &&
+                previoTelefono.isBlank();
+
+        if (noHayNada) {
+            return;
+        }
+
+        tfNacionalidad.setText(previoNacionalidad);
+        tfPais.setText(previoPais);
+        tfFechaEntrada.setText(previoFechaEntrada);
+        tfFechaSalida.setText(previoFechaSalida);
+        tfNumHabitaciones.setText(previoNumHabitaciones);
+        tfNumPersonas.setText(previoNumPersonas);
+        tfNumeroHabitacion.setText(previoNumeroHabitacion);
+        tfLugarInicioCamino.setText(previoLugarInicioCamino);
+        tfUltimoAlbergue.setText(previoUltimoAlbergue);
+        tfCaminoDestino.setText(previoCaminoDestino);
+        tfTelefono.setText(previoTelefono);
+
+        aplicarReglaMunicipio();
+
+        marcarError(tfNacionalidad, false);
+        marcarError(tfPais, false);
+        marcarError(tfCodigoMunicipio, false);
+        marcarError(tfNombreMunicipio, false);
+
+        Platform.runLater(() -> tfTipoDocumento.requestFocus());
     }
 
     // --------------------------
@@ -272,42 +358,54 @@ public class MainController {
     } */
 
     private void cargarEnFicha(Peregrino p) {
-        actual = p;
+        cargandoFicha = true;
 
-        tfTipoDocumento.setText(safe(p.getTipoDocumento()));
-        tfNumeroDocumento.setText(safe(p.getNumeroDocumento()));
-        tfNombre.setText(safe(p.getNombre()));
-        tfApellido1.setText(safe(p.getApellido1()));
-        tfApellido2.setText(safe(p.getApellido2()));
-        tfFechaNacimiento.setText(safe(p.getFechaNacimiento()));
-        tfSexo.setText(safe(p.getSexo()));
-        tfNacionalidad.setText(safe(p.getNacionalidad()));
-        tfPais.setText(safe(p.getPais()));
-        tfCodigoPostal.setText(safe(p.getCodigoPostal()));
-        tfDireccion.setText(safe(p.getDireccion()));
-        tfDireccionComplementaria.setText(safe(p.getDireccionComplementaria()));
-        tfCodigoMunicipio.setText(safe(p.getCodigoMunicipio()));
-        tfNombreMunicipio.setText(safe(p.getNombreMunicipio()));
-        tfTelefono.setText(safe(p.getTelefono1()));
-        tfTelefono2.setText(safe(p.getTelefono2()));
-        tfCorreo.setText(safe(p.getCorreo()));
-        tfParentesco.setText(safe(p.getParentesco()));
-        tfFechaNacimiento.setText(fechaEsDesdeIso(p.getFechaNacimiento()));
+        try {
+            actual = p;
 
-        aplicarReglaMunicipio();
-        
-        cargarEstanciaDe(p);
-        cargarHabitacionYCamaEnFicha();
-        
-        bloquearDocumentoSiExistente(true);
+            tfTipoDocumento.setText(safe(p.getTipoDocumento()));
+            tfNumeroDocumento.setText(safe(p.getNumeroDocumento()));
+            tfNombre.setText(safe(p.getNombre()));
+            tfApellido1.setText(safe(p.getApellido1()));
+            tfApellido2.setText(safe(p.getApellido2()));
+            tfFechaNacimiento.setText(safe(p.getFechaNacimiento()));
+            tfSexo.setText(safe(p.getSexo()));
+            tfNacionalidad.setText(safe(p.getNacionalidad()));
+            tfPais.setText(safe(p.getPais()));
+            tfCodigoPostal.setText(safe(p.getCodigoPostal()));
+            tfDireccion.setText(safe(p.getDireccion()));
+            tfDireccionComplementaria.setText(safe(p.getDireccionComplementaria()));
+            tfCodigoMunicipio.setText(safe(p.getCodigoMunicipio()));
+            tfNombreMunicipio.setText(safe(p.getNombreMunicipio()));
+            tfTelefono.setText(safe(p.getTelefono1()));
+            tfTelefono2.setText(safe(p.getTelefono2()));
+            tfCorreo.setText(safe(p.getCorreo()));
+            tfParentesco.setText(safe(p.getParentesco()));
+            tfFechaNacimiento.setText(fechaEsDesdeIso(p.getFechaNacimiento()));
+            tfSoporteDocumento.setText(safe(p.getSoporteDocumento()));
+            tfRol.setText(safe(p.getRol()));
+
+            aplicarReglaMunicipio();
+
+            cargarEstanciaDe(p);
+            cargarHabitacionYCamaEnFicha();
+
+            bloquearDocumentoSiExistente(true);
+
+            marcarError(tfCodigoMunicipio, false);
+            marcarError(tfNombreMunicipio, false);
+
+        } finally {
+            cargandoFicha = false;
+        }
     }
 
     private void volcarDeFichaAActual() {
         if (actual == null) actual = new Peregrino();
 
-        if (actual.getRol() == null || actual.getRol().isBlank()) {
-            actual.setRol("VI");
-        }
+        String rol = trim(tfRol).toUpperCase();
+        if (rol.isBlank()) rol = "VI";
+        actual.setRol(rol);
 
         // ---- Peregrino ----
         actual.setTipoDocumento(trim(tfTipoDocumento));
@@ -328,11 +426,53 @@ public class MainController {
         actual.setTelefono2(trim(tfTelefono2));
         actual.setCorreo(trim(tfCorreo));
         actual.setParentesco(trim(tfParentesco));
+        actual.setSoporteDocumento(trim(tfSoporteDocumento));
 
         // ---- Estancia ----
         if (estanciaActual == null) estanciaActual = new Estancia();
 
         estanciaActual.setIdAlbergue(1);
+        estanciaActual.setLugarInicioCamino(trim(tfLugarInicioCamino));
+        estanciaActual.setUltimoAlbergue(trim(tfUltimoAlbergue));
+        estanciaActual.setCaminoDestino(trim(tfCaminoDestino));
+        estanciaActual.setObservaciones(trim(taObservaciones));
+        
+        String fechaContrato = fechaIsoDesdeCampo(tfFechaContrato);
+        if (fechaContrato.isBlank()) {
+            fechaContrato = LocalDate.now().toString();
+            tfFechaContrato.setText(LocalDate.now().format(FECHA_ES));
+        }
+        estanciaActual.setFechaContrato(fechaContrato);
+
+        estanciaActual.setMedioPago(trim(tfMedioPago));
+        
+        try {
+            int nh = Integer.parseInt(trim(tfNumHabitaciones));
+            estanciaActual.setNumeroHabitaciones(nh);
+        } catch (Exception e) {
+            estanciaActual.setNumeroHabitaciones(1);
+        }
+
+        estanciaActual.setInternetIncluido(cbInternet.isSelected());
+
+        try {
+            int np = Integer.parseInt(trim(tfNumPersonas));
+            estanciaActual.setNumPersonasContrato(np);
+        } catch (Exception e) {
+            estanciaActual.setNumPersonasContrato(1);
+        }
+
+        estanciaActual.setTipoPago(trim(tfTipoPago));
+        
+        String titular = trim(tfTitular);
+        if (titular.isBlank()) {
+            titular = construirNombreCompletoHuesped();
+            tfTitular.setText(titular);
+        }
+        
+        estanciaActual.setTitularPago(titular);
+        estanciaActual.setCaducidadTarjeta(trim(tfCaducidadTarjeta));
+        estanciaActual.setFechaPago(fechaIsoDesdeCampo(tfFechaPago));
 
         // referencia (nunca vacía)
         String ref = trim(tfReferencia);
@@ -434,63 +574,82 @@ public class MainController {
     }
 
     private void nuevaFicha() {
-        actual = new Peregrino();
-        actual.setRol("VI");
-        
-        estanciaActual = new Estancia();
-        estanciaActual.setIdAlbergue(1);
-        estanciaActual.setEstadoEstancia("ACTIVA");
-        estanciaActual.setNumeroHabitaciones(1);
-        
-        
-        
-        bloquearDocumentoSiExistente(false);
-        
+        cargandoFicha = true;
 
-        
-        // Limpia selección
-        lvHuespedes.getSelectionModel().clearSelection();
+        try {
+            actual = new Peregrino();
+            actual.setRol("VI");
 
-        // Defaults “prácticos”
-        tfTipoDocumento.setText("NIF");
-        tfSexo.setText("H");
-        tfNacionalidad.setText("ESP");
-        tfPais.setText("ESP");
+            estanciaActual = new Estancia();
+            estanciaActual.setIdAlbergue(1);
+            estanciaActual.setEstadoEstancia("ACTIVA");
+            estanciaActual.setNumeroHabitaciones(1);
 
-        // Referencia única
-        String ref = generarReferenciaEstancia();
-        tfReferencia.setText(ref);
+            estanciaActual.setFechaContrato(LocalDate.now().toString());
+            estanciaActual.setTipoPago("EFECT");
+            estanciaActual.setMedioPago("EFECT");
 
-        // Fechas por defecto (entrada hoy, salida mañana)
-        LocalDate hoy = LocalDate.now();
-        tfFechaEntrada.setText(hoy.format(FECHA_ES));
-        tfFechaSalida.setText(hoy.plusDays(1).format(FECHA_ES));
-        
-        estanciaActual.setFechaEntrada(hoy.toString());
-        estanciaActual.setFechaSalidaPrevista(hoy.plusDays(1).toString());
+            bloquearDocumentoSiExistente(false);
 
-        // Limpia el resto de campos típicos (si quieres, opcional)
-        tfNumeroDocumento.setText("");
-        tfNombre.setText("");
-        tfApellido1.setText("");
-        tfApellido2.setText("");
-        tfFechaNacimiento.setText("");
-        tfCodigoPostal.setText("");
-        tfDireccion.setText("");
-        tfDireccionComplementaria.setText("");
-        tfCodigoMunicipio.setText("");
-        tfNombreMunicipio.setText("");
-        tfTelefono.setText("");
-        tfTelefono2.setText("");
-        tfCorreo.setText("");
-        tfParentesco.setText("");
-        tfNumeroHabitacion.setText("");
-        tfNumeroCama.setText("");
+            lvHuespedes.getSelectionModel().clearSelection();
 
-        // Aplica regla municipio tras setear país
-        aplicarReglaMunicipio();
+            tfTipoDocumento.setText("NIF");
+            tfSexo.setText("H");
+            tfNacionalidad.setText("ESP");
+            tfPais.setText("ESP");
 
-        // Scroll arriba + foco
+            String ref = generarReferenciaEstancia();
+            tfReferencia.setText(ref);
+
+            LocalDate hoy = LocalDate.now();
+            tfFechaEntrada.setText(hoy.format(FECHA_ES));
+            tfFechaSalida.setText(hoy.plusDays(1).format(FECHA_ES));
+
+            estanciaActual.setFechaEntrada(hoy.toString());
+            estanciaActual.setFechaSalidaPrevista(hoy.plusDays(1).toString());
+
+            tfNumeroDocumento.setText("");
+            tfNombre.setText("");
+            tfApellido1.setText("");
+            tfApellido2.setText("");
+            tfFechaNacimiento.setText("");
+            tfCodigoPostal.setText("");
+            tfDireccion.setText("");
+            tfDireccionComplementaria.setText("");
+            tfCodigoMunicipio.setText("");
+            tfNombreMunicipio.setText("");
+            tfTelefono.setText("");
+            tfTelefono2.setText("");
+            tfCorreo.setText("");
+            tfParentesco.setText("");
+            tfNumeroHabitacion.setText("");
+            tfNumeroCama.setText("");
+            tfLugarInicioCamino.setText("");
+            tfUltimoAlbergue.setText("");
+            tfCaminoDestino.setText("");
+            tfNumHabitaciones.setText("1");
+            cbInternet.setSelected(true);
+            tfNumPersonas.setText("1");
+            tfTipoPago.setText("EFECT");
+            tfTitular.setText("");
+            tfCaducidadTarjeta.setText("");
+            tfFechaPago.setText("");
+            tfSoporteDocumento.setText("");
+            taObservaciones.setText("");
+            
+            tfRol.setText("VI");
+            tfFechaContrato.setText(LocalDate.now().format(FECHA_ES));
+            tfMedioPago.setText("EFECT");
+
+            aplicarReglaMunicipio();
+
+            marcarError(tfCodigoMunicipio, false);
+            marcarError(tfNombreMunicipio, false);
+
+        } finally {
+            cargandoFicha = false;
+        }
+
         Platform.runLater(() -> {
             spFicha.setVvalue(0.0);
             tfTipoDocumento.requestFocus();
@@ -521,6 +680,11 @@ public class MainController {
         normalizarCampoFecha(tfFechaEntrada);
         normalizarCampoFecha(tfFechaSalida);
         normalizarCampoFecha(tfFechaNacimiento);
+        normalizarCampoFecha(tfFechaPago);
+        normalizarCampoFecha(tfFechaContrato);
+        normalizarCampoFecha(tfFechaPago);
+        tfRol.setText(trim(tfRol).toUpperCase());
+        tfParentesco.setText(trim(tfParentesco).toUpperCase());
 
         LocalDate fn = parseFechaFlexible(tfFechaNacimiento.getText());
         if (fn != null && fn.isAfter(LocalDate.now())) {
@@ -538,6 +702,11 @@ public class MainController {
         validarIso3(tfNacionalidad);
         validarIso3(tfPais);
         validarMunicipioSegunPaisSoloCampos();
+        validarTipoPago();
+        validarTipoPago();
+        validarParentesco();
+        validarCaducidadTarjeta();
+        validarRol();
 
         // Bloqueo por aforo: solo para estancias nuevas
         LocalDate fechaControl = parseFechaFlexible(tfFechaEntrada.getText());
@@ -583,10 +752,13 @@ public class MainController {
                 estanciaActual.setNumeroHabitaciones(1);
             }
 
-            // 4️⃣ Guardar estancia (insert o update automático)
+            //  Guardar estancia (insert o update automático)
             EstanciaService.guardar(estanciaActual);
+            
+            //  Guardar datos previos para posible copia en nuevo registro
+            guardarDatosPreviosDesdeFicha();
 
-            // 5️⃣ Refrescar UI
+            //  Refrescar UI
             refrescarLista();
             nuevaFicha();
 
@@ -632,6 +804,11 @@ public class MainController {
 
         instalarValidador(tfCodigoMunicipio, this::validarMunicipioSegunPaisSoloCampos);
         instalarValidador(tfNombreMunicipio, this::validarMunicipioSegunPaisSoloCampos);
+        instalarValidador(tfTipoPago, this::validarTipoPago);
+        
+        instalarValidador(tfParentesco, this::validarParentesco);
+        instalarValidador(tfCaducidadTarjeta, this::validarCaducidadTarjeta);
+        instalarValidador(tfRol, this::validarRol);
 
         // País: solo reacciona cuando ya es ISO3 (para no fastidiar el autocompletar)
         tfPais.textProperty().addListener((o, a, b) -> {
@@ -782,18 +959,38 @@ public class MainController {
     }
 
     private boolean validarMunicipioSegunPaisSoloCampos() {
-        String pais = trim(tfPais).toUpperCase();
+        if (cargandoFicha) {
+            marcarError(tfCodigoMunicipio, false);
+            marcarError(tfNombreMunicipio, false);
+            return true;
+        }
 
+        String pais = trim(tfPais).toUpperCase();
         boolean esEsp = "ESP".equals(pais);
 
         if (esEsp) {
             String cod = trim(tfCodigoMunicipio);
+
+            if (cod.isBlank()) {
+                marcarError(tfCodigoMunicipio, false);
+                marcarError(tfNombreMunicipio, false);
+                return true;
+            }
+
             boolean ok = cod.matches("^\\d{5}$");
             marcarError(tfCodigoMunicipio, !ok);
             marcarError(tfNombreMunicipio, false);
             return ok;
+
         } else {
             String nom = trim(tfNombreMunicipio);
+
+            if (nom.isBlank()) {
+                marcarError(tfNombreMunicipio, false);
+                marcarError(tfCodigoMunicipio, false);
+                return true;
+            }
+
             boolean ok = !nom.isBlank();
             marcarError(tfNombreMunicipio, !ok);
             marcarError(tfCodigoMunicipio, false);
@@ -860,7 +1057,9 @@ public class MainController {
         return tf == null || tf.getText() == null ? "" : tf.getText().trim();
     }
     
-    
+    private static String trim(javafx.scene.control.TextArea ta) {
+        return ta == null || ta.getText() == null ? "" : ta.getText().trim();
+    }
     
     
     
@@ -1511,8 +1710,7 @@ public class MainController {
     
     private void cargarEstanciaDe(Peregrino p) {
         try {
-            // Necesitas un método así en tu servicio:
-            // - "buscarActivaPorPeregrino" o "buscarUltimaPorPeregrino"
+            // buscamos la estancia que coincida con el peregrino y la fecha de la lista (si hay)
         	estanciaActual = EstanciaService.buscarPorPeregrinoYFecha(p.getIdPeregrino(), fechaLista);
 
             if (estanciaActual == null) {
@@ -1525,6 +1723,23 @@ public class MainController {
             tfReferencia.setText(safe(estanciaActual.getReferenciaContrato()));
             tfFechaEntrada.setText(fechaEsDesdeIso(estanciaActual.getFechaEntrada()));
             tfFechaSalida.setText(fechaEsDesdeIso(estanciaActual.getFechaSalidaPrevista()));
+            tfLugarInicioCamino.setText(safe(estanciaActual.getLugarInicioCamino()));
+            tfUltimoAlbergue.setText(safe(estanciaActual.getUltimoAlbergue()));
+            tfCaminoDestino.setText(safe(estanciaActual.getCaminoDestino()));
+            tfNumHabitaciones.setText(estanciaActual.getNumeroHabitaciones() > 0 ? String.valueOf(estanciaActual.getNumeroHabitaciones()) : "");
+            cbInternet.setSelected(estanciaActual.isInternetIncluido());
+            tfFechaContrato.setText(fechaEsDesdeIso(estanciaActual.getFechaContrato()));
+            tfMedioPago.setText(safe(estanciaActual.getMedioPago()));
+            
+            Integer numPersonas = estanciaActual.getNumPersonasContrato();
+            tfNumPersonas.setText(numPersonas != null && numPersonas > 0 ? String.valueOf(numPersonas) : "");
+            
+            tfTipoPago.setText(safe(estanciaActual.getTipoPago()));
+            tfTitular.setText(safe(estanciaActual.getTitularPago()));
+            tfCaducidadTarjeta.setText(safe(estanciaActual.getCaducidadTarjeta()));
+            tfFechaPago.setText(fechaEsDesdeIso(estanciaActual.getFechaPago()));
+            
+            taObservaciones.setText(safe(estanciaActual.getObservaciones()));
 
         } catch (DatabaseException e) {
             System.out.println(e.getMessage());
@@ -1536,6 +1751,19 @@ public class MainController {
             tfReferencia.setText("");
             tfFechaEntrada.setText("");
             tfFechaSalida.setText("");
+            tfLugarInicioCamino.setText("");
+            tfUltimoAlbergue.setText("");
+            tfCaminoDestino.setText("");
+            tfNumHabitaciones.setText("");
+            cbInternet.setSelected(false);
+            tfNumPersonas.setText("");
+            tfTipoPago.setText("");
+            tfTitular.setText("");
+            tfCaducidadTarjeta.setText("");
+            tfFechaPago.setText("");
+            tfFechaContrato.setText("");
+            tfMedioPago.setText("");
+            taObservaciones.setText("");
         }
     }
     
@@ -1680,6 +1908,7 @@ public class MainController {
             tfTelefono2.setText(safe(existente.getTelefono2()));
             tfCorreo.setText(safe(existente.getCorreo()));
             tfParentesco.setText(safe(existente.getParentesco()));
+            tfSoporteDocumento.setText(safe(existente.getSoporteDocumento()));
 
             aplicarReglaMunicipio();
             bloquearDocumentoSiExistente(true);
@@ -1829,6 +2058,100 @@ public class MainController {
         }
     }
     
+    private void guardarDatosPreviosDesdeFicha() {
+        previoNacionalidad = trim(tfNacionalidad);
+        previoPais = trim(tfPais);
+        previoFechaEntrada = trim(tfFechaEntrada);
+        previoFechaSalida = trim(tfFechaSalida);
+        previoNumHabitaciones = trim(tfNumHabitaciones);
+        previoNumPersonas = trim(tfNumPersonas);
+        previoNumeroHabitacion = trim(tfNumeroHabitacion);
+        previoLugarInicioCamino = trim(tfLugarInicioCamino);
+        previoUltimoAlbergue = trim(tfUltimoAlbergue);
+        previoCaminoDestino = trim(tfCaminoDestino);
+        previoTelefono = trim(tfTelefono);
+    }
+    
+    private boolean validarTipoPago() {
+        String v = trim(tfTipoPago).toUpperCase();
+        tfTipoPago.setText(v);
+
+        if (v.isBlank()) {
+            marcarError(tfTipoPago, false);
+            return true;
+        }
+
+        boolean ok = TIPOS_PAGO_VALIDOS.contains(v);
+        marcarError(tfTipoPago, !ok);
+        return ok;
+    }
+    
+    private String construirNombreCompletoHuesped() {
+        String nombre = trim(tfNombre);
+        String apellido1 = trim(tfApellido1);
+        String apellido2 = trim(tfApellido2);
+
+        return (nombre + " " + apellido1 + " " + apellido2).trim().replaceAll("\\s+", " ");
+    }
+    
+    private boolean validarParentesco() {
+        String v = trim(tfParentesco).toUpperCase();
+        tfParentesco.setText(v);
+
+        if (v.isBlank()) {
+            marcarError(tfParentesco, false);
+            return true;
+        }
+
+        boolean ok = PARENTESCOS_VALIDOS.contains(v);
+        marcarError(tfParentesco, !ok);
+        return ok;
+    }
+    
+    private boolean validarCaducidadTarjeta() {
+        String v = trim(tfCaducidadTarjeta);
+
+        if (v.isBlank()) {
+            marcarError(tfCaducidadTarjeta, false);
+            return true;
+        }
+
+        if (!v.matches("^(0[1-9]|1[0-2])/\\d{4}$")) {
+            marcarError(tfCaducidadTarjeta, true);
+            return false;
+        }
+
+        int year = Integer.parseInt(v.substring(3));
+        boolean ok = year >= 2023;
+
+        marcarError(tfCaducidadTarjeta, !ok);
+        return ok;
+    }
+    
+    private boolean validarRol() {
+        String v = trim(tfRol).toUpperCase();
+        if (v.isBlank()) v = "VI";
+        tfRol.setText(v);
+
+        boolean ok = v.matches("^(VI)$");
+        marcarError(tfRol, !ok);
+        return ok;
+    }
+    
+    private void autoResizeTextArea(TextArea ta) {
+
+        ta.setPrefRowCount(1);
+
+        ta.textProperty().addListener((obs, oldText, newText) -> {
+            int lineas = newText.split("\n", -1).length;
+
+            double alturaLinea = 24;
+            double nuevaAltura = (lineas + 1) * alturaLinea;
+            double maxAltura = 150;
+
+            ta.setPrefHeight(Math.min(nuevaAltura, maxAltura));
+        });
+    }
     
  // FUTURO:
  // Cuando existan preregistros desde la nube, el indicador de plazas deberá

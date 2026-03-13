@@ -6,128 +6,165 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
 public class EstanciaDAO {
 
+    public static void insertar(Connection conn, Estancia e) throws SQLException {
 
-	public static void insertar(Connection conn, Estancia e) throws SQLException {
+        String sql = """
+            INSERT INTO estancia (
+                id_envio_xml,
+                id_cama,
+                id_albergue,
+                id_peregrino,
+                fecha_contrato,
+                fecha_entrada,
+                fecha_salida_prevista,
+                fecha_salida_real,
+                numero_habitaciones,
+                id_grupo,
+                internet_incluido,
+                referencia_contrato,
+                estado_estancia,
+                lugar_inicio_camino,
+                ultimo_albergue,
+                camino_destino,
+                num_personas_contrato,
+                tipo_pago,
+                titular_pago,
+                caducidad_tarjeta,
+                medio_pago,
+                fecha_pago
+                observaciones
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """;
 
-	    String sql = """
-	        INSERT INTO estancia (
-	            id_envio_xml,
-	            id_cama,
-	            id_albergue,
-	            id_peregrino,
-	            fecha_contrato,
-	            fecha_entrada,
-	            fecha_salida_prevista,
-	            fecha_salida_real,
-	            numero_habitaciones,
-	            id_grupo,
-	            internet_incluido,
-	            referencia_contrato,
-	            estado_estancia
-	        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-	        """;
+        try (PreparedStatement ps = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
 
-	    try (PreparedStatement ps = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
+            if (e.getIdEnvioXml() == null) ps.setNull(1, java.sql.Types.INTEGER);
+            else ps.setInt(1, e.getIdEnvioXml());
 
-	        // id_envio_xml (nullable)
-	        if (e.getIdEnvioXml() == null) ps.setNull(1, java.sql.Types.INTEGER);
-	        else ps.setInt(1, e.getIdEnvioXml());
+            if (e.getIdCama() == null) ps.setNull(2, java.sql.Types.INTEGER);
+            else ps.setInt(2, e.getIdCama());
 
-	        // id_cama (nullable)
-	        if (e.getIdCama() == null) ps.setNull(2, java.sql.Types.INTEGER);
-	        else ps.setInt(2, e.getIdCama());
+            ps.setInt(3, e.getIdAlbergue());
+            ps.setInt(4, e.getIdPeregrino());
 
-	        ps.setInt(3, e.getIdAlbergue());
-	        ps.setInt(4, e.getIdPeregrino());
+            ps.setString(5, emptyToNull(e.getFechaContrato()));
+            ps.setString(6, emptyToNull(e.getFechaEntrada()));
+            ps.setString(7, emptyToNull(e.getFechaSalidaPrevista()));
+            ps.setString(8, emptyToNull(e.getFechaSalidaReal()));
 
-	        ps.setString(5, emptyToNull(e.getFechaContrato()));
-	        ps.setString(6, emptyToNull(e.getFechaEntrada()));
-	        ps.setString(7, emptyToNull(e.getFechaSalidaPrevista()));
-	        ps.setString(8, emptyToNull(e.getFechaSalidaReal()));
+            ps.setInt(9, e.getNumeroHabitaciones());
+            ps.setString(10, emptyToNull(e.getIdGrupo()));
 
-	        ps.setInt(9, e.getNumeroHabitaciones());
-	        ps.setString(10, e.getIdGrupo());
+            ps.setInt(11, e.isInternetIncluido() ? 1 : 0);
 
-	        ps.setInt(11, e.isInternetIncluido() ? 1 : 0);
+            ps.setString(12, emptyToNull(e.getReferenciaContrato()));
+            ps.setString(13, emptyToNull(e.getEstadoEstancia()));
 
-	        ps.setString(12, e.getReferenciaContrato());
-	        ps.setString(13, e.getEstadoEstancia());
+            ps.setString(14, emptyToNull(e.getLugarInicioCamino()));
+            ps.setString(15, emptyToNull(e.getUltimoAlbergue()));
+            ps.setString(16, emptyToNull(e.getCaminoDestino()));
 
-	        ps.executeUpdate();
+            if (e.getNumPersonasContrato() == null) ps.setNull(17, java.sql.Types.INTEGER);
+            else ps.setInt(17, e.getNumPersonasContrato());
 
-	        // id autogenerado (id_estancia)
-	        try (ResultSet rs = ps.getGeneratedKeys()) {
-	            if (rs.next()) {
-	                e.setIdEstancia(rs.getInt(1));
-	            }
-	        }
-	    }
-	}
+            ps.setString(18, emptyToNull(e.getTipoPago()));
+            ps.setString(19, emptyToNull(e.getTitularPago()));
+            ps.setString(20, emptyToNull(e.getCaducidadTarjeta()));
+            ps.setString(22, emptyToNull(e.getFechaPago()));
 
+            ps.executeUpdate();
 
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    e.setIdEstancia(rs.getInt(1));
+                }
+            }
+        }
+    }
 
-	public static void actualizar(Connection conn, Estancia e) throws SQLException {
+    public static void actualizar(Connection conn, Estancia e) throws SQLException {
 
-	    String sql = """
-	        UPDATE estancia
-	        SET id_envio_xml = ?,
-	            id_cama = ?,
-	            id_albergue = ?,
-	            id_peregrino = ?,
-	            fecha_contrato = ?,
-	            fecha_entrada = ?,
-	            fecha_salida_prevista = ?,
-	            fecha_salida_real = ?,
-	            numero_habitaciones = ?,
-	            id_grupo = ?,
-	            internet_incluido = ?,
-	            referencia_contrato = ?,
-	            estado_estancia = ?
-	        WHERE id_estancia = ?
-	        """;
+        String sql = """
+            UPDATE estancia
+            SET id_envio_xml = ?,
+                id_cama = ?,
+                id_albergue = ?,
+                id_peregrino = ?,
+                fecha_contrato = ?,
+                fecha_entrada = ?,
+                fecha_salida_prevista = ?,
+                fecha_salida_real = ?,
+                numero_habitaciones = ?,
+                id_grupo = ?,
+                internet_incluido = ?,
+                referencia_contrato = ?,
+                estado_estancia = ?,
+                lugar_inicio_camino = ?,
+                ultimo_albergue = ?,
+                camino_destino = ?,
+                num_personas_contrato = ?,
+                tipo_pago = ?,
+                titular_pago = ?,
+                caducidad_tarjeta = ?,
+                medio_pago = ?,
+                fecha_pago = ?
+                observaciones = ?
+            WHERE id_estancia = ?
+            """;
 
-	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
 
-	        if (e.getIdEnvioXml() == null) ps.setNull(1, java.sql.Types.INTEGER);
-	        else ps.setInt(1, e.getIdEnvioXml());
+            if (e.getIdEnvioXml() == null) ps.setNull(1, java.sql.Types.INTEGER);
+            else ps.setInt(1, e.getIdEnvioXml());
 
-	        if (e.getIdCama() == null) ps.setNull(2, java.sql.Types.INTEGER);
-	        else ps.setInt(2, e.getIdCama());
+            if (e.getIdCama() == null) ps.setNull(2, java.sql.Types.INTEGER);
+            else ps.setInt(2, e.getIdCama());
 
-	        ps.setInt(3, e.getIdAlbergue());
-	        ps.setInt(4, e.getIdPeregrino());
+            ps.setInt(3, e.getIdAlbergue());
+            ps.setInt(4, e.getIdPeregrino());
 
-	        ps.setString(5, emptyToNull(e.getFechaContrato()));
-	        ps.setString(6, emptyToNull(e.getFechaEntrada()));
-	        ps.setString(7, emptyToNull(e.getFechaSalidaPrevista()));
-	        ps.setString(8, emptyToNull(e.getFechaSalidaReal()));
+            ps.setString(5, emptyToNull(e.getFechaContrato()));
+            ps.setString(6, emptyToNull(e.getFechaEntrada()));
+            ps.setString(7, emptyToNull(e.getFechaSalidaPrevista()));
+            ps.setString(8, emptyToNull(e.getFechaSalidaReal()));
 
-	        ps.setInt(9, e.getNumeroHabitaciones());
-	        ps.setString(10, emptyToNull(e.getIdGrupo()));
+            ps.setInt(9, e.getNumeroHabitaciones());
+            ps.setString(10, emptyToNull(e.getIdGrupo()));
 
-	        ps.setBoolean(11, e.isInternetIncluido());
+            ps.setInt(11, e.isInternetIncluido() ? 1 : 0);
 
-	        ps.setString(12, emptyToNull(e.getReferenciaContrato()));
-	        ps.setString(13, emptyToNull(e.getEstadoEstancia()));
+            ps.setString(12, emptyToNull(e.getReferenciaContrato()));
+            ps.setString(13, emptyToNull(e.getEstadoEstancia()));
 
-	        ps.setInt(14, e.getIdEstancia());
+            ps.setString(14, emptyToNull(e.getLugarInicioCamino()));
+            ps.setString(15, emptyToNull(e.getUltimoAlbergue()));
+            ps.setString(16, emptyToNull(e.getCaminoDestino()));
 
-	        ps.executeUpdate();
-	    }
-	}
+            if (e.getNumPersonasContrato() == null) ps.setNull(17, java.sql.Types.INTEGER);
+            else ps.setInt(17, e.getNumPersonasContrato());
 
-	private static String emptyToNull(String s) {
-	    if (s == null) return null;
-	    String t = s.trim();
-	    return t.isBlank() ? null : t;
-	}
+            ps.setString(18, emptyToNull(e.getTipoPago()));
+            ps.setString(19, emptyToNull(e.getTitularPago()));
+            ps.setString(20, emptyToNull(e.getCaducidadTarjeta()));
+            ps.setString(22, emptyToNull(e.getFechaPago()));
 
+            ps.setInt(23, e.getIdEstancia());
+            ps.setString(24, emptyToNull(e.getObservaciones()));
+
+            ps.executeUpdate();
+        }
+    }
+
+    private static String emptyToNull(String s) {
+        if (s == null) return null;
+        String t = s.trim();
+        return t.isBlank() ? null : t;
+    }
 
     public static Estancia obtenerPorId(Connection conn, int idEstancia) throws SQLException {
 
@@ -143,7 +180,6 @@ public class EstanciaDAO {
 
         return null;
     }
-
 
     public static List<Estancia> listarActivas(Connection conn) throws SQLException {
 
@@ -163,7 +199,6 @@ public class EstanciaDAO {
 
         return lista;
     }
-
 
     public static List<Estancia> listarPorCama(Connection conn, int idCama) throws SQLException {
 
@@ -185,9 +220,6 @@ public class EstanciaDAO {
 
         return lista;
     }
-    
-    
-
 
     public static List<Estancia> listarPorPeregrino(Connection conn, int idPeregrino) throws SQLException {
 
@@ -210,19 +242,16 @@ public class EstanciaDAO {
         return lista;
     }
 
-
     private static Estancia mapear(ResultSet rs) throws SQLException {
 
         Estancia e = new Estancia();
 
         e.setIdEstancia(rs.getInt("id_estancia"));
 
-        // id_envio_xml (nullable)
         int idEnvio = rs.getInt("id_envio_xml");
         if (rs.wasNull()) e.setIdEnvioXml(null);
         else e.setIdEnvioXml(idEnvio);
 
-        // id_cama (nullable)
         int idCama = rs.getInt("id_cama");
         if (rs.wasNull()) e.setIdCama(null);
         else e.setIdCama(idCama);
@@ -243,9 +272,26 @@ public class EstanciaDAO {
         e.setReferenciaContrato(rs.getString("referencia_contrato"));
         e.setEstadoEstancia(rs.getString("estado_estancia"));
 
+        e.setLugarInicioCamino(rs.getString("lugar_inicio_camino"));
+        e.setUltimoAlbergue(rs.getString("ultimo_albergue"));
+        e.setCaminoDestino(rs.getString("camino_destino"));
+        e.setObservaciones(rs.getString("observaciones"));
+
+        int numPersonas = rs.getInt("num_personas_contrato");
+        if (rs.wasNull()) {
+            e.setNumPersonasContrato(null);
+        } else {
+            e.setNumPersonasContrato(numPersonas);
+        }
+
+        e.setTipoPago(rs.getString("tipo_pago"));
+        e.setTitularPago(rs.getString("titular_pago"));
+        e.setCaducidadTarjeta(rs.getString("caducidad_tarjeta"));
+        e.setFechaPago(rs.getString("fecha_pago"));
+
         return e;
     }
-    
+
     public static List<Estancia> listarPorDia(Connection conn, int idAlbergue, String fechaEntradaISO) throws SQLException {
 
         String sql = """
@@ -273,7 +319,6 @@ public class EstanciaDAO {
 
         return lista;
     }
-    
 
     public static void vincularEnvioXml(
             Connection conn,
@@ -313,13 +358,13 @@ public class EstanciaDAO {
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return mapear(rs); // ahora te digo mapear()
+                    return mapear(rs);
                 }
                 return null;
             }
         }
     }
-    
+
     public static Estancia buscarPorPeregrinoYFecha(Connection conn, int idPeregrino, String fechaISO) throws SQLException {
 
         String sql = """
@@ -354,7 +399,7 @@ public class EstanciaDAO {
 
         return null;
     }
-    
+
     public static int contarOcupadasEnFecha(Connection conn, int idAlbergue, String fechaISO) throws SQLException {
 
         String sql = """
@@ -381,11 +426,4 @@ public class EstanciaDAO {
             }
         }
     }
-    
 }
-
-
-
-
-
-

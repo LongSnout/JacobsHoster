@@ -22,17 +22,23 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.control.TextArea?>
 
-<BorderPane prefHeight="400.0" prefWidth="600.0" styleClass="app-root" stylesheets="@styles/app.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.MainController">
+<BorderPane prefHeight="400.0" prefWidth="600.0"
+            styleClass="app-root"
+            stylesheets="@styles/app.css"
+            xmlns="http://javafx.com/javafx/25"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="controller.MainController">
 
    <top>
       <MenuBar>
         <menus>
-          	<Menu mnemonicParsing="false" text="Archivo">
-    			<items>
-        			<MenuItem mnemonicParsing="false" text="Editar albergue" onAction="#onEditarAlbergue" />
-    			</items>
-			</Menu>
+          <Menu mnemonicParsing="false" text="Archivo">
+            <items>
+              <MenuItem mnemonicParsing="false" onAction="#onEditarAlbergue" text="Editar albergue" />
+            </items>
+          </Menu>
           <Menu mnemonicParsing="false" text="Edición">
             <items>
               <MenuItem mnemonicParsing="false" text="Delete" />
@@ -61,39 +67,49 @@
               <AnchorPane minHeight="0.0" minWidth="0.0">
                 <children>
 
-                  <HBox spacing="7.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                  <HBox spacing="7.0"
+                        AnchorPane.bottomAnchor="0.0"
+                        AnchorPane.leftAnchor="0.0"
+                        AnchorPane.rightAnchor="0.0"
+                        AnchorPane.topAnchor="0.0">
 
                     <padding>
                       <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                     </padding>
 
-                    <!-- COLUMNA IZQUIERDA -->
                     <VBox prefWidth="220.0" spacing="6.0" styleClass="left-panel">
                       <children>
 
                         <HBox spacing="4.0">
-  							<children>
-    							<Button fx:id="btnDiaAnterior" mnemonicParsing="false" onAction="#onDiaAnterior" text="◀" />
-    							<DatePicker fx:id="dpFechaLista" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
-    							<Button fx:id="btnDiaSiguiente" mnemonicParsing="false" onAction="#onDiaSiguiente" text="▶" />
-  							</children>
-						</HBox>
+                          <children>
+                            <Button fx:id="btnDiaAnterior" mnemonicParsing="false" onAction="#onDiaAnterior" text="◀" />
+                            <DatePicker fx:id="dpFechaLista" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
+                            <Button fx:id="btnDiaSiguiente" mnemonicParsing="false" onAction="#onDiaSiguiente" text="▶" />
+                          </children>
+                        </HBox>
 
-						<TextField fx:id="tfBuscarHuesped" promptText="Buscar (nombre, DNI...)" />
+                        <TextField fx:id="tfBuscarHuesped" promptText="Buscar (nombre, DNI...)" />
 
                         <ListView fx:id="lvHuespedes" VBox.vgrow="ALWAYS" />
-                        
+
                         <Label fx:id="lblPlazas" text="Plazas ocupadas: 0 / 0" />
 
-                        <Button maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="btn-exportar" text="Exportar XML Ministerio" VBox.vgrow="NEVER" />
+                        <Button maxWidth="1.7976931348623157E308"
+                                mnemonicParsing="false"
+                                prefHeight="26.0"
+                                styleClass="btn-exportar"
+                                text="Exportar XML Ministerio"
+                                VBox.vgrow="NEVER" />
                       </children>
                     </VBox>
 
-                    <!-- PANEL DERECHO (ficha) -->
                     <BorderPane styleClass="ficha-shell" HBox.hgrow="ALWAYS">
 
                       <center>
-                        <ScrollPane fx:id="spFicha" fitToWidth="true" hbarPolicy="NEVER" BorderPane.alignment="CENTER">
+                        <ScrollPane fx:id="spFicha"
+                                    fitToWidth="true"
+                                    hbarPolicy="NEVER"
+                                    BorderPane.alignment="CENTER">
                           <content>
                             <VBox maxWidth="1.7976931348623157E308" spacing="14.0" styleClass="ficha-root">
                               <padding>
@@ -102,15 +118,11 @@
 
                               <children>
 
-                                <!-- =========================
-                                     DATOS MINIMOS MINISTERIO
-                                     ========================= -->
                                 <VBox spacing="8.0" styleClass="ficha-section">
                                   <children>
                                     <Label focusTraversable="false" styleClass="ficha-title" text="Datos mínimos Ministerio de Interior" />
                                     <Separator />
 
-                                    <!-- PERSONA (minimos) -->
                                     <GridPane hgap="10.0" vgap="8.0">
                                       <columnConstraints>
                                         <ColumnConstraints minWidth="170.0" prefWidth="170.0" />
@@ -144,15 +156,20 @@
                                       </children>
 
                                       <rowConstraints>
-                                        <RowConstraints /><RowConstraints /><RowConstraints /><RowConstraints />
-                                        <RowConstraints /><RowConstraints /><RowConstraints /><RowConstraints />
+                                        <RowConstraints />
+                                        <RowConstraints />
+                                        <RowConstraints />
+                                        <RowConstraints />
+                                        <RowConstraints />
+                                        <RowConstraints />
+                                        <RowConstraints />
+                                        <RowConstraints />
                                       </rowConstraints>
                                     </GridPane>
 
                                     <Separator />
                                     <Label focusTraversable="false" styleClass="ficha-title" text="Dirección" />
 
-                                    <!-- DIRECCION (minimos) -->
                                     <GridPane hgap="10.0" vgap="8.0">
                                       <columnConstraints>
                                         <ColumnConstraints minWidth="170.0" prefWidth="170.0" />
@@ -177,13 +194,16 @@
                                       </children>
 
                                       <rowConstraints>
-                                        <RowConstraints /><RowConstraints /><RowConstraints /><RowConstraints /><RowConstraints />
+                                        <RowConstraints />
+                                        <RowConstraints />
+                                        <RowConstraints />
+                                        <RowConstraints />
+                                        <RowConstraints />
                                       </rowConstraints>
                                     </GridPane>
                                   </children>
                                 </VBox>
 
-                                <!-- ========================= ESTANCIA ========================= -->
                                 <VBox spacing="8.0" styleClass="ficha-section">
                                   <children>
                                     <Label focusTraversable="false" styleClass="ficha-title" text="Estancia" />
@@ -200,10 +220,10 @@
                                         <TextField fx:id="tfReferencia" editable="false" focusTraversable="false" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="0" />
 
                                         <Label focusTraversable="false" styleClass="ficha-label" text="Fecha entrada" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                                        <TextField fx:id="tfFechaEntrada" maxWidth="1.7976931348623157E308" promptText="dd/MM/aaaa HH:mm" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                        <TextField fx:id="tfFechaEntrada" maxWidth="1.7976931348623157E308" promptText="dd/MM/aaaa" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 
                                         <Label focusTraversable="false" styleClass="ficha-label" text="Fecha salida" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-                                        <TextField fx:id="tfFechaSalida" maxWidth="1.7976931348623157E308" promptText="dd/MM/aaaa HH:mm" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                        <TextField fx:id="tfFechaSalida" maxWidth="1.7976931348623157E308" promptText="dd/MM/aaaa" GridPane.columnIndex="1" GridPane.rowIndex="2" />
 
                                         <Label focusTraversable="false" styleClass="ficha-label" text="Nº habitaciones" GridPane.columnIndex="0" GridPane.rowIndex="3" />
                                         <TextField fx:id="tfNumHabitaciones" maxWidth="1.7976931348623157E308" promptText="1" GridPane.columnIndex="1" GridPane.rowIndex="3" />
@@ -211,31 +231,46 @@
                                         <Label focusTraversable="false" styleClass="ficha-label" text="Internet" GridPane.columnIndex="0" GridPane.rowIndex="4" />
                                         <CheckBox fx:id="cbInternet" GridPane.columnIndex="1" GridPane.rowIndex="4" />
 
-                                        <Label focusTraversable="false" styleClass="ficha-label" text="Tamaño de grupo" GridPane.columnIndex="0" GridPane.rowIndex="5" />
-                                        <TextField fx:id="tfTamGrupo" maxWidth="1.7976931348623157E308" promptText="1" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="Nº personas (contrato)" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+                                        <TextField fx:id="tfNumPersonas" maxWidth="1.7976931348623157E308" promptText="1" GridPane.columnIndex="1" GridPane.rowIndex="5" />
 
-                                        <Label focusTraversable="false" styleClass="ficha-label" text="Nº personas (contrato)" GridPane.columnIndex="0" GridPane.rowIndex="6" />
-                                        <TextField fx:id="tfNumPersonas" maxWidth="1.7976931348623157E308" promptText="1" GridPane.columnIndex="1" GridPane.rowIndex="6" />
-                                        
-                                        <Label focusTraversable="false" styleClass="ficha-label" text="Nº habitación" GridPane.columnIndex="0" GridPane.rowIndex="7" />
-										<TextField fx:id="tfNumeroHabitacion" maxWidth="1.7976931348623157E308" promptText="Ej: 3" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="Nº habitación" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+                                        <TextField fx:id="tfNumeroHabitacion" maxWidth="1.7976931348623157E308" promptText="Ej: 3" GridPane.columnIndex="1" GridPane.rowIndex="6" />
 
-										<Label focusTraversable="false" styleClass="ficha-label" text="Nº cama" GridPane.columnIndex="0" GridPane.rowIndex="8" />
-										<TextField fx:id="tfNumeroCama" maxWidth="1.7976931348623157E308" promptText="Ej: 2" GridPane.columnIndex="1" GridPane.rowIndex="8" />
-                                        
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="Nº cama" GridPane.columnIndex="0" GridPane.rowIndex="7" />
+                                        <TextField fx:id="tfNumeroCama" maxWidth="1.7976931348623157E308" promptText="Ej: 2" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="Inicio del camino" GridPane.columnIndex="0" GridPane.rowIndex="8" />
+                                        <TextField fx:id="tfLugarInicioCamino" maxWidth="1.7976931348623157E308" promptText="Ej: Irún" GridPane.columnIndex="1" GridPane.rowIndex="8" />
+
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="Último albergue" GridPane.columnIndex="0" GridPane.rowIndex="9" />
+                                        <TextField fx:id="tfUltimoAlbergue" maxWidth="1.7976931348623157E308" promptText="Ej: Albergue de Tineo" GridPane.columnIndex="1" GridPane.rowIndex="9" />
+
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="Camino destino" GridPane.columnIndex="0" GridPane.rowIndex="10" />
+                                        <TextField fx:id="tfCaminoDestino" maxWidth="1.7976931348623157E308" promptText="Ej: Primitivo" GridPane.columnIndex="1" GridPane.rowIndex="10" />
+
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="Fecha contrato" GridPane.columnIndex="0" GridPane.rowIndex="11" />
+                                        <TextField fx:id="tfFechaContrato" maxWidth="1.7976931348623157E308" promptText="dd/MM/aaaa" GridPane.columnIndex="1" GridPane.rowIndex="11" />
                                       </children>
 
                                       <rowConstraints>
-    									<RowConstraints /><RowConstraints /><RowConstraints /><RowConstraints />
-    									<RowConstraints /><RowConstraints /><RowConstraints /><RowConstraints />
-    									<RowConstraints />
-    								  </rowConstraints>
-									
+                                        <RowConstraints />
+                                        <RowConstraints />
+                                        <RowConstraints />
+                                        <RowConstraints />
+                                        <RowConstraints />
+                                        <RowConstraints />
+                                        <RowConstraints />
+                                        <RowConstraints />
+                                        <RowConstraints />
+                                        <RowConstraints />
+                                        <RowConstraints />
+                                        <RowConstraints />
+                                      </rowConstraints>
                                     </GridPane>
                                   </children>
                                 </VBox>
 
-                                <!-- ========================= PAGO ========================= -->
                                 <VBox spacing="8.0" styleClass="ficha-section">
                                   <children>
                                     <Label focusTraversable="false" styleClass="ficha-title" text="Pago" />
@@ -258,20 +293,23 @@
                                         <TextField fx:id="tfCaducidadTarjeta" maxWidth="1.7976931348623157E308" promptText="mm/aaaa" GridPane.columnIndex="1" GridPane.rowIndex="2" />
 
                                         <Label focusTraversable="false" styleClass="ficha-label" text="Medio de pago" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-                                        <TextField fx:id="tfMedioPago" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                        <TextField fx:id="tfMedioPago" maxWidth="1.7976931348623157E308" promptText="Ej: metálico / TPV / app" GridPane.columnIndex="1" GridPane.rowIndex="3" />
 
                                         <Label focusTraversable="false" styleClass="ficha-label" text="Fecha de pago" GridPane.columnIndex="0" GridPane.rowIndex="4" />
                                         <TextField fx:id="tfFechaPago" maxWidth="1.7976931348623157E308" promptText="dd/MM/aaaa" GridPane.columnIndex="1" GridPane.rowIndex="4" />
                                       </children>
 
                                       <rowConstraints>
-                                        <RowConstraints /><RowConstraints /><RowConstraints /><RowConstraints /><RowConstraints />
+                                        <RowConstraints />
+                                        <RowConstraints />
+                                        <RowConstraints />
+                                        <RowConstraints />
+                                        <RowConstraints />
                                       </rowConstraints>
                                     </GridPane>
                                   </children>
                                 </VBox>
 
-                                <!-- ========================= EXTRAS ========================= -->
                                 <VBox spacing="8.0" styleClass="ficha-section">
                                   <children>
                                     <Label focusTraversable="false" styleClass="ficha-title" text="Extras (opcionales)" />
@@ -301,11 +339,35 @@
 
                                         <Label focusTraversable="false" styleClass="ficha-label" text="Parentesco" GridPane.columnIndex="0" GridPane.rowIndex="5" />
                                         <TextField fx:id="tfParentesco" maxWidth="1.7976931348623157E308" promptText="AB/BA/..." GridPane.columnIndex="1" GridPane.rowIndex="5" />
+
+                                        <Label focusTraversable="false" styleClass="ficha-label" text="Rol" GridPane.columnIndex="0" GridPane.rowIndex="6" />
+                                        <TextField fx:id="tfRol" maxWidth="1.7976931348623157E308" promptText="VI" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                                      
+                                      	<Label text="Observaciones"
+       										styleClass="ficha-label"
+       										GridPane.columnIndex="0"
+       										GridPane.rowIndex="7"
+       										GridPane.valignment="TOP"/>
+										<TextArea fx:id="taObservaciones"
+          									styleClass="ficha-textarea"
+          									wrapText="true"
+          									promptText="Apuntes internos, incidencias, notas..."
+          									GridPane.columnIndex="1"
+          									GridPane.rowIndex="7"
+          									GridPane.valignment="TOP"/>
+                                      
+                                      
                                       </children>
 
                                       <rowConstraints>
-                                        <RowConstraints /><RowConstraints /><RowConstraints />
-                                        <RowConstraints /><RowConstraints /><RowConstraints />
+                                        <RowConstraints />
+                                        <RowConstraints />
+                                        <RowConstraints />
+                                        <RowConstraints />
+                                        <RowConstraints />
+                                        <RowConstraints />
+                                        <RowConstraints />
+                                        <RowConstraints />
                                       </rowConstraints>
                                     </GridPane>
                                   </children>
@@ -320,10 +382,26 @@
                       <bottom>
                         <HBox styleClass="ficha-actions" BorderPane.alignment="CENTER">
                           <children>
+                            <Button fx:id="btnCopiarDatosPrevios"
+                                    mnemonicParsing="false"
+                                    onAction="#onCopiarDatosPrevios"
+                                    prefHeight="26.0"
+                                    style="-fx-background-color: #dfff58; -fx-text-fill: black; -fx-font-weight: bold;"
+                                    text="Copiar datos previos" />
                             <Region HBox.hgrow="ALWAYS" />
-                            <Button fx:id="btnEliminar" mnemonicParsing="false" onAction="#onEliminarFicha" styleClass="btn-eliminar" text="Eliminar ficha" />
-
-							<Button fx:id="btnGuardar" defaultButton="true" mnemonicParsing="false" onAction="#onGuardarFicha" styleClass="btn-guardar" text="Guardar ficha" />
+                            <Button fx:id="btnEliminar"
+                                    mnemonicParsing="false"
+                                    onAction="#onEliminarFicha"
+                                    prefHeight="26.0"
+                                    styleClass="btn-eliminar"
+                                    text="Eliminar ficha" />
+                            <Button fx:id="btnGuardar"
+                                    defaultButton="true"
+                                    mnemonicParsing="false"
+                                    onAction="#onGuardarFicha"
+                                    prefHeight="26.0"
+                                    styleClass="btn-guardar"
+                                    text="Guardar ficha" />
                           </children>
                         </HBox>
                       </bottom>
@@ -336,9 +414,23 @@
             </content>
           </Tab>
 
-          <Tab text="Ventas"><content><AnchorPane minHeight="0.0" minWidth="0.0" /></content></Tab>
-          <Tab text="Informes y estadísticas"><content><AnchorPane minHeight="0.0" minWidth="0.0" /></content></Tab>
-          <Tab text="Servidor en la nube"><content><AnchorPane minHeight="0.0" minWidth="0.0" /></content></Tab>
+          <Tab text="Ventas">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" />
+            </content>
+          </Tab>
+
+          <Tab text="Informes y estadísticas">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" />
+            </content>
+          </Tab>
+
+          <Tab text="Servidor en la nube">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" />
+            </content>
+          </Tab>
 
         </tabs>
       </TabPane>

@@ -12,7 +12,6 @@ import java.util.List;
 
 public class PeregrinoDAO {
 
-
     public static void insertar(Connection conn, Peregrino p) throws SQLException {
 
         String sql = """
@@ -25,8 +24,9 @@ public class PeregrinoDAO {
                 codigo_municipio, nombre_municipio,
                 codigo_postal, pais,
                 telefono1, telefono2,
-                correo, parentesco
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                correo, parentesco,
+                soporte_documento
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """;
 
         try (PreparedStatement ps = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
@@ -58,10 +58,10 @@ public class PeregrinoDAO {
 
             ps.setString(18, p.getCorreo());
             ps.setString(19, p.getParentesco());
+            ps.setString(20, p.getSoporteDocumento());
 
             ps.executeUpdate();
 
-            // Recuperar el id autogenerado (id_peregrino)
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 if (rs.next()) {
                     p.setIdPeregrino(rs.getInt(1));
@@ -69,7 +69,6 @@ public class PeregrinoDAO {
             }
         }
     }
-
 
     public static void update(Connection conn, Peregrino p) throws SQLException {
 
@@ -93,7 +92,8 @@ public class PeregrinoDAO {
                 telefono1 = ?,
                 telefono2 = ?,
                 correo = ?,
-                parentesco = ?
+                parentesco = ?,
+                soporte_documento = ?
             WHERE id_peregrino = ?
             """;
 
@@ -126,13 +126,13 @@ public class PeregrinoDAO {
 
             ps.setString(18, p.getCorreo());
             ps.setString(19, p.getParentesco());
+            ps.setString(20, p.getSoporteDocumento());
 
-            ps.setInt(20, p.getIdPeregrino());
+            ps.setInt(21, p.getIdPeregrino());
 
             ps.executeUpdate();
         }
     }
-
 
     public static List<Peregrino> listarTodos(Connection conn) throws SQLException {
 
@@ -150,7 +150,6 @@ public class PeregrinoDAO {
         return lista;
     }
 
-
     public static Peregrino obtenerPorId(Connection conn, int idPeregrino) throws SQLException {
 
         String sql = "SELECT * FROM peregrino WHERE id_peregrino = ?";
@@ -167,7 +166,6 @@ public class PeregrinoDAO {
 
         return null;
     }
-
 
     public static Peregrino obtenerPorDocumento(Connection conn, String tipoDocumento, String numeroDocumento)
             throws SQLException {
@@ -193,7 +191,6 @@ public class PeregrinoDAO {
 
         return null;
     }
-
 
     private static Peregrino mapear(ResultSet rs) throws SQLException {
 
@@ -228,10 +225,11 @@ public class PeregrinoDAO {
 
         p.setCorreo(rs.getString("correo"));
         p.setParentesco(rs.getString("parentesco"));
+        p.setSoporteDocumento(rs.getString("soporte_documento"));
 
         return p;
     }
-    
+
     public static void eliminarPorId(Connection conn, int idPeregrino) throws SQLException {
 
         String sql = "DELETE FROM peregrino WHERE id_peregrino = ?";
@@ -241,7 +239,7 @@ public class PeregrinoDAO {
             ps.executeUpdate();
         }
     }
-    
+
     public static List<Peregrino> listarPresentesPorDia(Connection conn, int idAlbergue, String fechaISO) throws SQLException {
 
         String sql = """
@@ -278,7 +276,7 @@ public class PeregrinoDAO {
 
         return lista;
     }
-    
+
     public static List<Peregrino> buscarGlobal(Connection conn, String texto) throws SQLException {
 
         String sql = """
@@ -292,6 +290,7 @@ public class PeregrinoDAO {
                OR UPPER(COALESCE(telefono1, '')) LIKE ?
                OR UPPER(COALESCE(telefono2, '')) LIKE ?
                OR UPPER(COALESCE(correo, '')) LIKE ?
+               OR UPPER(COALESCE(soporte_documento, '')) LIKE ?
             ORDER BY id_peregrino DESC
             """;
 
@@ -299,7 +298,7 @@ public class PeregrinoDAO {
         String patron = "%" + texto.trim().toUpperCase() + "%";
 
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            for (int i = 1; i <= 8; i++) {
+            for (int i = 1; i <= 9; i++) {
                 ps.setString(i, patron);
             }
 
@@ -312,5 +311,4 @@ public class PeregrinoDAO {
 
         return lista;
     }
-    
 }

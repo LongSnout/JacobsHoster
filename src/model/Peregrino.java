@@ -33,6 +33,7 @@ public class Peregrino {
     private String correo;
 
     private String parentesco;
+    private String soporteDocumento;
 
     public Peregrino() {
     }
@@ -195,6 +196,14 @@ public class Peregrino {
 
     public void setParentesco(String parentesco) {
         this.parentesco = parentesco;
+    }
+    
+    public String getSoporteDocumento() {
+        return soporteDocumento;
+    }
+
+    public void setSoporteDocumento(String soporteDocumento) {
+        this.soporteDocumento = soporteDocumento;
     }
 
     @Override
