@@ -36,7 +36,7 @@ public class EstanciaDAO {
                 titular_pago,
                 caducidad_tarjeta,
                 medio_pago,
-                fecha_pago
+                fecha_pago,
                 observaciones
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """;
@@ -112,7 +112,7 @@ public class EstanciaDAO {
                 titular_pago = ?,
                 caducidad_tarjeta = ?,
                 medio_pago = ?,
-                fecha_pago = ?
+                fecha_pago = ?,
                 observaciones = ?
             WHERE id_estancia = ?
             """;
