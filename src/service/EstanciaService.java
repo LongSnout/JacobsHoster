@@ -11,6 +11,9 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.LocalDate;
 
+import java.util.List;
+import model.Peregrino;
+
 public class EstanciaService {
 
     /**
@@ -147,9 +150,9 @@ public class EstanciaService {
         }
     }
     */
-    public static java.util.List<model.Peregrino> listarPeregrinosPresentesPorDia(int idAlbergue, LocalDate fecha) {
+    public static List<Peregrino> listarPeregrinosPresentesPorDia(int idAlbergue, LocalDate fecha) {
         try (Connection conn = DBManager.getConnection()) {
-        	return PeregrinoDAO.listarPresentesPorDia(conn, idAlbergue, fecha.toString());
+            return PeregrinoDAO.listarPresentesPorDia(conn, idAlbergue, fecha.toString());
         } catch (SQLException e) {
             throw new DatabaseException("Error al listar peregrinos presentes en fecha " + fecha, e);
         }
@@ -173,6 +176,21 @@ public class EstanciaService {
             throw new DatabaseException("Error al contar plazas ocupadas en fecha " + fecha, e);
         }
     }
+    
+    
+    public static List<Estancia> listarPorRangoFechas(int idAlbergue,
+            LocalDate fechaDesde, LocalDate fechaHasta) {
+        try (Connection conn = DBManager.getConnection()) {
+            return EstanciaDAO.listarPorRangoFechas(conn, idAlbergue,
+                fechaDesde.toString(), fechaHasta.toString());
+        } catch (SQLException e) {
+            throw new DatabaseException("Error listando estancias por rango", e);
+        }
+    }
+    
+    
+    
+    
     
     
     

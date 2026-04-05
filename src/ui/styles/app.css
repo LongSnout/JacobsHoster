@@ -1,10 +1,10 @@
-/* filepath: c:\Users\Berto\Desktop\Desarrollo de Aplicaciones Multiplataforma\1Curso 2025-2026\Ejercicios Eclipse\JacobsHoster\src\ui\styles\app.css */
-
 
 /*Login Screen Styles*/
 
 
-/*login background*/
+/*++++++++++++++++++++++++++++++++++++++++++++++++++
+              login background*/
+
 .login-root {
   -fx-background-image: url("../images/login_bg.png");
   -fx-background-size: cover;
@@ -37,9 +37,7 @@
     -fx-background-color: rgba(121, 192, 150, 1.0);
 }
 
-/* =========================
-   Ventana principal y ficha
-   ========================= */
+/* Ventana principal y ficha */
 
 .root {
     /* Base */
@@ -266,6 +264,7 @@
   -fx-background-color: #6c97ab;
 }
 
+
 /* Pulsado */
 .left-panel .button:pressed {
   -fx-background-color: #5f8a9e;
@@ -298,6 +297,18 @@
 .scroll-bar .thumb:pressed {
   -fx-background-color: #a7bbc6;
 }
+
+/* Copiar datos previos */
+.btn-copiar {
+  -fx-background-color: #dfff58;
+  -fx-text-fill: black;
+  -fx-font-weight: bold;
+  -fx-padding: 6 14 6 14;
+  -fx-alignment: CENTER;
+}
+
+.btn-copiar:hover   { -fx-background-color: #d0f040; }
+.btn-copiar:pressed { -fx-background-color: #c1e030; }
 
 /* Quitar flechas si quieres más limpio */
 .scroll-bar .increment-button,
@@ -337,9 +348,130 @@
     -fx-text-fill: black;
 }
 
-/* ---------- Estados de validación (para luego) ---------- */
-.field-error {
+/* ===== Widget de ventas ===== */
+
+.ventas-panel {
+    -fx-background-color: rgba(255,255,255,0.55);
+    -fx-border-color: rgba(0,0,0,0.08);
+    -fx-border-width: 0 0 0 1;
+}
+
+.ventas-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+}
+
+.ventas-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.ventas-titulo {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1c3e4f;
+    -fx-padding: 0 0 6 0;
+}
+
+.ventas-total {
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1c3e4f;
+}
+
+/* Fila de producto normal */
+.ventas-fila {
+    -fx-padding: 5 4 5 4;
+    -fx-border-color: transparent transparent rgba(0,0,0,0.07) transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.ventas-fila:hover {
+    -fx-background-color: rgba(0,0,0,0.04);
+}
+
+/* Fila de estancia (destacada) */
+.ventas-fila-estancia {
+    -fx-padding: 5 4 5 4;
+    -fx-background-color: rgba(113,244,185,0.18);
+    -fx-border-color: transparent transparent rgba(0,0,0,0.07) transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.ventas-nombre {
+    -fx-font-size: 11px;
+    -fx-text-fill: #1c3e4f;
+}
+
+.ventas-nombre-estancia {
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1c3e4f;
+}
+
+.ventas-precio {
+    -fx-font-size: 10px;
+    -fx-text-fill: rgba(0,0,0,0.5);
+}
+
+.ventas-btn {
+    -fx-background-color: #d0e8f0;
+    -fx-text-fill: #1c3e4f;
+    -fx-font-weight: bold;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-pref-width: 22px;
+    -fx-pref-height: 22px;
+    -fx-min-width: 22px;
+    -fx-min-height: 22px;
+    -fx-padding: 0;
+    -fx-cursor: hand;
+}
+
+.ventas-btn:hover {
+    -fx-background-color: #b8d8e8;
+}
+
+.ventas-btn:pressed {
+    -fx-background-color: #a0c8d8;
+}
+
+.ventas-cantidad {
+    -fx-pref-width: 32px;
+    -fx-max-width: 32px;
+    -fx-alignment: CENTER;
+    -fx-background-radius: 4;
+    -fx-border-radius: 4;
+    -fx-border-color: rgba(0,0,0,0.15);
+    -fx-font-size: 11px;
+    -fx-pref-height: 22px;
+}
+
+
+/* Resumen ventas */
+.ventas-resumen-item {
+    -fx-font-size: 12px;
+    -fx-text-fill: #1c3e4f;
+}
+
+.ventas-resumen-total {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #1c3e4f;
+}
+
+.ventas-topbar {
+    -fx-padding: 4 0 4 0;
+}
+
+/* ---------- Validación error (naranja) ---------- */
+.text-field.field-error {
     -fx-background-color: #fff2e6;
     -fx-border-color: #ff8a3d;
     -fx-border-width: 1.2;
 }
+
+
+
+
+
+

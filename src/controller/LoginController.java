@@ -13,6 +13,7 @@ import exception.AuthException;
 
 import javafx.application.Platform;
 import service.AlbergueService;
+import config.SesionActual;
 import controller.NuevoAlbergueController;
 
 public class LoginController {
@@ -49,7 +50,8 @@ public class LoginController {
 
         try {
             Usuario u = AuthService.login(user, pass);
-
+            SesionActual.iniciar(u);
+            
             // Cambiar a main.fxml
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/main.fxml"));
             Scene scene = new Scene(loader.load());
@@ -57,6 +59,7 @@ public class LoginController {
             Stage stage = (Stage) txtUsuario.getScene().getWindow();
             stage.setTitle("Jacobs Hoster");
             stage.setScene(scene);
+            stage.setMaximized(true);
             stage.show();
 
         } catch (AuthException e) {

@@ -70,12 +70,14 @@ public class EstanciaDAO {
             ps.setString(16, emptyToNull(e.getCaminoDestino()));
 
             if (e.getNumPersonasContrato() == null) ps.setNull(17, java.sql.Types.INTEGER);
-            else ps.setInt(17, e.getNumPersonasContrato());
+            else ps.setString(17, e.getNumPersonasContrato());
 
             ps.setString(18, emptyToNull(e.getTipoPago()));
             ps.setString(19, emptyToNull(e.getTitularPago()));
             ps.setString(20, emptyToNull(e.getCaducidadTarjeta()));
+            ps.setString(21, emptyToNull(e.getMedioPago()));
             ps.setString(22, emptyToNull(e.getFechaPago()));
+            ps.setString(23, emptyToNull(e.getObservaciones()));
 
             ps.executeUpdate();
 
@@ -146,15 +148,15 @@ public class EstanciaDAO {
             ps.setString(16, emptyToNull(e.getCaminoDestino()));
 
             if (e.getNumPersonasContrato() == null) ps.setNull(17, java.sql.Types.INTEGER);
-            else ps.setInt(17, e.getNumPersonasContrato());
+            else ps.setString(17, e.getNumPersonasContrato());
 
             ps.setString(18, emptyToNull(e.getTipoPago()));
             ps.setString(19, emptyToNull(e.getTitularPago()));
             ps.setString(20, emptyToNull(e.getCaducidadTarjeta()));
+            ps.setString(21, emptyToNull(e.getMedioPago()));
             ps.setString(22, emptyToNull(e.getFechaPago()));
-
-            ps.setInt(23, e.getIdEstancia());
-            ps.setString(24, emptyToNull(e.getObservaciones()));
+            ps.setString(23, emptyToNull(e.getObservaciones()));
+            ps.setInt(24, e.getIdEstancia());
 
             ps.executeUpdate();
         }
@@ -277,7 +279,7 @@ public class EstanciaDAO {
         e.setCaminoDestino(rs.getString("camino_destino"));
         e.setObservaciones(rs.getString("observaciones"));
 
-        int numPersonas = rs.getInt("num_personas_contrato");
+        String numPersonas = rs.getString("num_personas_contrato");
         if (rs.wasNull()) {
             e.setNumPersonasContrato(null);
         } else {
@@ -426,4 +428,41 @@ public class EstanciaDAO {
             }
         }
     }
+    
+    public static List<Estancia> listarPorRangoFechas(Connection conn,
+            int idAlbergue, String fechaDesde, String fechaHasta) throws SQLException {
+
+        String sql = """
+            SELECT * FROM estancia
+            WHERE id_albergue = ?
+              AND estado_estancia <> 'CANCELADA'
+              AND fecha_entrada >= ?
+              AND fecha_entrada <= ?
+            ORDER BY fecha_entrada
+            """;
+
+        List<Estancia> lista = new ArrayList<>();
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idAlbergue);
+            ps.setString(2, fechaDesde);
+            ps.setString(3, fechaHasta);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) lista.add(mapear(rs));
+            }
+        }
+        return lista;
+    }
+    
+    
 }
+
+
+
+
+
+
+
+
+
+
+

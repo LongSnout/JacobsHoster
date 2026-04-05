@@ -2,7 +2,9 @@ package service;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 import dao.PeregrinoDAO;
 import db.DBManager;
@@ -81,6 +83,41 @@ public class PeregrinoService {
             throw new DatabaseException("Error al buscar peregrinos: " + texto, e);
         }
     }
+    
+    public static List<Peregrino> listarPorRangoFechas(int idAlbergue,
+            LocalDate fechaDesde, LocalDate fechaHasta) {
+        try (Connection conn = DBManager.getConnection()) {
+            return PeregrinoDAO.listarPorRangoFechas(conn, idAlbergue,
+                fechaDesde.toString(), fechaHasta.toString());
+        } catch (SQLException e) {
+            throw new DatabaseException("Error listando peregrinos por rango", e);
+        }
+    }
+
+    public static Map<String, Integer> contarPorSexo(int idAlbergue, int anio) {
+        try (Connection conn = DBManager.getConnection()) {
+            return PeregrinoDAO.contarPorSexo(conn, idAlbergue, anio);
+        } catch (SQLException e) {
+            throw new DatabaseException("Error contando por sexo", e);
+        }
+    }
+
+    public static Map<String, Integer> contarPorPais(int idAlbergue, int anio) {
+        try (Connection conn = DBManager.getConnection()) {
+            return PeregrinoDAO.contarPorPais(conn, idAlbergue, anio);
+        } catch (SQLException e) {
+            throw new DatabaseException("Error contando por país", e);
+        }
+    }
+
+    public static Map<String, Integer> contarPorFranjaEdad(int idAlbergue, int anio) {
+        try (Connection conn = DBManager.getConnection()) {
+            return PeregrinoDAO.contarPorFranjaEdad(conn, idAlbergue, anio);
+        } catch (SQLException e) {
+            throw new DatabaseException("Error contando por franja de edad", e);
+        }
+    }
+    
     
     
     

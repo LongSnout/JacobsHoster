@@ -18,7 +18,6 @@ public class AppConfig {
 	
 	public static final int ID_ALBERGUE = 1;
 
-    public static final String CODIGO_ESTABLECIMIENTO = "AST-ALB-001";
 	
     
     //clave de sincronización con la nube, cada albergue tendrá la suya.
@@ -27,26 +26,26 @@ public class AppConfig {
     	// Es la clave que identifica al albergue de cara a la API.
     
     	/* TODO: Idea de seguridad para la clave de sincronización
-Flujo:
-En la app de escritorio: “Conectar este PC al albergue”
-El usuario mete su email de albergue.
-El servidor comprueba que ese email está en la lista blanca.
-El servidor genera un código de emparejado de un solo uso (o enlace con código).
-Envías email con un botón: “Autorizar este PC”.
-Cuando lo autoriza, el servidor emite:
-install_id (id de instalación)
-install_secret (secreto de instalación)
-y opcionalmente un refresh_token para sacar tokens cortos
-La app guarda eso localmente (en tu SQLite o en un keystore).
-A partir de ahí, la app se autentica con:
-install_id + install_secret
-y el servidor solo entrega preregistros del albergue asociado a esa instalación.
-Ventaja brutal
-Si alguien se baja la app y “cambia el token”:
-no puede, porque no tiene una instalación emparejada
-y sin acceso al email del albergue no puede emparejar una nueva
-Y si un albergue pierde un PC:
-revocas esa instalación y listo.
+		Flujo:
+		En la app de escritorio: “Conectar este PC al albergue”
+		El usuario mete su email de albergue.
+		El servidor comprueba que ese email está en la lista blanca.
+		El servidor genera un código de emparejado de un solo uso (o enlace con código).
+		Envías email con un botón: “Autorizar este PC”.
+		Cuando lo autoriza, el servidor emite:
+		install_id (id de instalación)
+		install_secret (secreto de instalación)
+		y opcionalmente un refresh_token para sacar tokens cortos
+		La app guarda eso localmente (en tu SQLite o en un keystore).
+		A partir de ahí, la app se autentica con:
+		install_id + install_secret
+		y el servidor solo entrega preregistros del albergue asociado a esa instalación.
+		Ventaja brutal
+		Si alguien se baja la app y “cambia el token”:
+		no puede, porque no tiene una instalación emparejada
+		y sin acceso al email del albergue no puede emparejar una nueva
+		Y si un albergue pierde un PC:
+		revocas esa instalación y listo.
     	 */
     
     public static final String SYNC_KEY = "CAMBIAR_EN_PRODUCCION";
@@ -65,6 +64,10 @@ revocas esa instalación y listo.
     // Cuántos días mantener preregistros pendientes antes de caducar
     public static final int PRERREGISTRO_CADUCIDAD_DIAS = 3;
     
+    
+    // Ruta donde se guardan los XMLs del Ministerio
+    // Se puede cambiar desde Edición > Ajustar carpeta XML
+    public static String XML_OUTPUT_DIR = "Informes ministerio";
 	
 	
 }

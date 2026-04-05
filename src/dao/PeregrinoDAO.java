@@ -8,7 +8,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class PeregrinoDAO {
 
@@ -232,9 +234,28 @@ public class PeregrinoDAO {
 
     public static void eliminarPorId(Connection conn, int idPeregrino) throws SQLException {
 
-        String sql = "DELETE FROM peregrino WHERE id_peregrino = ?";
+        // 1. Borrar líneas de venta de sus estancias
+        String sqlVentas = """
+            DELETE FROM venta_linea
+            WHERE id_estancia IN (
+                SELECT id_estancia FROM estancia WHERE id_peregrino = ?
+            )
+            """;
+        try (PreparedStatement ps = conn.prepareStatement(sqlVentas)) {
+            ps.setInt(1, idPeregrino);
+            ps.executeUpdate();
+        }
 
-        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        // 2. Borrar estancias
+        String sqlEstancias = "DELETE FROM estancia WHERE id_peregrino = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sqlEstancias)) {
+            ps.setInt(1, idPeregrino);
+            ps.executeUpdate();
+        }
+
+        // 3. Borrar peregrino
+        String sqlPeregrino = "DELETE FROM peregrino WHERE id_peregrino = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sqlPeregrino)) {
             ps.setInt(1, idPeregrino);
             ps.executeUpdate();
         }
@@ -311,4 +332,162 @@ public class PeregrinoDAO {
 
         return lista;
     }
+    
+    public static List<Peregrino> listarPorRangoFechas(Connection conn,
+            int idAlbergue, String fechaDesde, String fechaHasta) throws SQLException {
+
+        String sql = """
+            SELECT p.* FROM peregrino p
+            INNER JOIN estancia e ON e.id_peregrino = p.id_peregrino
+            WHERE e.id_albergue = ?
+              AND e.estado_estancia <> 'CANCELADA'
+              AND e.fecha_entrada >= ?
+              AND e.fecha_entrada <= ?
+            ORDER BY e.fecha_entrada
+            """;
+
+        List<Peregrino> lista = new ArrayList<>();
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idAlbergue);
+            ps.setString(2, fechaDesde);
+            ps.setString(3, fechaHasta);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) lista.add(mapear(rs));
+            }
+        }
+        return lista;
+    }
+
+    public static Map<String, Integer> contarPorSexo(Connection conn,
+            int idAlbergue, int anio) throws SQLException {
+
+        String sql = """
+            SELECT p.sexo, COUNT(*) as total
+            FROM peregrino p
+            INNER JOIN estancia e ON e.id_peregrino = p.id_peregrino
+            WHERE e.id_albergue = ?
+              AND e.estado_estancia <> 'CANCELADA'
+              AND strftime('%Y', e.fecha_entrada) = ?
+            GROUP BY p.sexo
+            ORDER BY total DESC
+            """;
+
+        Map<String, Integer> resultado = new LinkedHashMap<>();
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idAlbergue);
+            ps.setString(2, String.valueOf(anio));
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String sexo = rs.getString("sexo");
+                    if (sexo == null || sexo.isBlank()) sexo = "?";
+                    resultado.put(sexo, rs.getInt("total"));
+                }
+            }
+        }
+        return resultado;
+    }
+
+    public static Map<String, Integer> contarPorPais(Connection conn,
+            int idAlbergue, int anio) throws SQLException {
+
+        String sql = """
+            SELECT p.nacionalidad, COUNT(*) as total
+            FROM peregrino p
+            INNER JOIN estancia e ON e.id_peregrino = p.id_peregrino
+            WHERE e.id_albergue = ?
+              AND e.estado_estancia <> 'CANCELADA'
+              AND strftime('%Y', e.fecha_entrada) = ?
+            GROUP BY p.nacionalidad
+            ORDER BY total DESC
+            """;
+
+        Map<String, Integer> resultado = new LinkedHashMap<>();
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idAlbergue);
+            ps.setString(2, String.valueOf(anio));
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String pais = rs.getString("nacionalidad");
+                    if (pais == null || pais.isBlank()) pais = "?";
+                    resultado.put(pais, rs.getInt("total"));
+                }
+            }
+        }
+        return resultado;
+    }
+
+    public static Map<String, Integer> contarPorFranjaEdad(Connection conn,
+            int idAlbergue, int anio) throws SQLException {
+
+        String sql = """
+            SELECT p.fecha_nacimiento
+            FROM peregrino p
+            INNER JOIN estancia e ON e.id_peregrino = p.id_peregrino
+            WHERE e.id_albergue = ?
+              AND e.estado_estancia <> 'CANCELADA'
+              AND strftime('%Y', e.fecha_entrada) = ?
+              AND p.fecha_nacimiento IS NOT NULL
+            """;
+
+        Map<String, Integer> franjas = new LinkedHashMap<>();
+        franjas.put("<18", 0);
+        franjas.put("18-30", 0);
+        franjas.put("31-45", 0);
+        franjas.put("46-60", 0);
+        franjas.put("61-75", 0);
+        franjas.put(">75", 0);
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, idAlbergue);
+            ps.setString(2, String.valueOf(anio));
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String fnStr = rs.getString("fecha_nacimiento");
+                    try {
+                        java.time.LocalDate fn = java.time.LocalDate.parse(fnStr);
+                        int edad = java.time.Period.between(fn,
+                            java.time.LocalDate.of(anio, 12, 31)).getYears();
+
+                        String franja;
+                        if (edad < 18) franja = "<18";
+                        else if (edad <= 30) franja = "18-30";
+                        else if (edad <= 45) franja = "31-45";
+                        else if (edad <= 60) franja = "46-60";
+                        else if (edad <= 75) franja = "61-75";
+                        else franja = ">75";
+
+                        franjas.merge(franja, 1, Integer::sum);
+                    } catch (Exception ignored) {}
+                }
+            }
+        }
+        return franjas;
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

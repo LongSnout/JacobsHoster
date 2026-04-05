@@ -90,6 +90,7 @@ public class UsuarioDAO {
         u.setNombreUsuario(rs.getString("nombre_usuario"));
         u.setPasswordHash(rs.getString("password_hash"));
         u.setRol(rs.getString("rol"));
+        u.setActivo(rs.getInt("activo") == 1);
 
         return u;
     }
@@ -149,5 +150,34 @@ public class UsuarioDAO {
         return null;
     }
     
+    public static java.util.List<Usuario> listarTodos(Connection conn) throws SQLException {
+
+        String sql = "SELECT * FROM usuario ORDER BY rol, nombre_usuario";
+
+        java.util.List<Usuario> lista = new java.util.ArrayList<>();
+
+        try (PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                Usuario u = mapear(rs);
+                u.setActivo(rs.getInt("activo") == 1);
+                lista.add(u);
+            }
+        }
+
+        return lista;
+    }
+
+    public static void actualizarActivo(Connection conn, int idUsuario, boolean activo) throws SQLException {
+
+        String sql = "UPDATE usuario SET activo = ? WHERE id_usuario = ?";
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, activo ? 1 : 0);
+            ps.setInt(2, idUsuario);
+            ps.executeUpdate();
+        }
+    }
     
 }

@@ -138,6 +138,30 @@ public class UsuarioService {
     }
     
     
+    public static java.util.List<Usuario> listarTodos() {
+        try (Connection conn = DBManager.getConnection()) {
+            return UsuarioDAO.listarTodos(conn);
+        } catch (SQLException e) {
+            throw new DatabaseException("Error listando usuarios", e);
+        }
+    }
+
+    public static void desactivarUsuario(int idUsuario) {
+        try (Connection conn = DBManager.getConnection()) {
+            UsuarioDAO.actualizarActivo(conn, idUsuario, false);
+        } catch (SQLException e) {
+            throw new DatabaseException("Error desactivando usuario", e);
+        }
+    }
+
+    public static void activarUsuario(int idUsuario) {
+        try (Connection conn = DBManager.getConnection()) {
+            UsuarioDAO.actualizarActivo(conn, idUsuario, true);
+        } catch (SQLException e) {
+            throw new DatabaseException("Error activando usuario", e);
+        }
+    }
+    
 }
 
 

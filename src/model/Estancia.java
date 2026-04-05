@@ -41,7 +41,7 @@ public class Estancia {
     private String observaciones;
     
     // Datos de pago
-    private Integer numPersonasContrato;
+    private String numPersonasContrato;
     private String tipoPago;
     private String titularPago;
     private String caducidadTarjeta;
@@ -189,11 +189,11 @@ public class Estancia {
     
     
 
-    public Integer getNumPersonasContrato() {
+    public String getNumPersonasContrato() {
         return numPersonasContrato;
     }
 
-    public void setNumPersonasContrato(Integer numPersonasContrato) {
+    public void setNumPersonasContrato(String numPersonasContrato) {
         this.numPersonasContrato = numPersonasContrato;
     }
 

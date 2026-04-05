@@ -6,6 +6,7 @@ public class Usuario {
 
     private String nombreUsuario;
     private String passwordHash;
+    private boolean activo = true;
 
     private String rol; // RECEPCION, GERENTE, etc.
 
@@ -43,11 +44,20 @@ public class Usuario {
     public void setRol(String rol) {
         this.rol = rol;
     }
+    
+    public boolean isActivo() {
+        return activo;
+    }
+
+    public void setActivo(boolean activo) {
+        this.activo = activo;
+    }
 
     @Override
     public String toString() {
         return "Usuario [idUsuario=" + idUsuario
                 + ", nombreUsuario=" + nombreUsuario
-                + ", rol=" + rol + "]";
+                + ", rol=" + rol
+                + ", activo=" + activo + "]";
     }
 }
