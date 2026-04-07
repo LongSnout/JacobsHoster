@@ -578,11 +578,16 @@
 
 </HBox>
 
+
+
                                 <!-- Panel inferior: Estadísticas -->
                                 <VBox spacing="8.0" styleClass="ficha-section">
                                     <children>
                                         <Label text="Estadísticas" styleClass="ficha-title"/>
                                         <Separator/>
+                                        
+                                        
+                                        
 
                                         <!-- Selector de año -->
 <HBox spacing="6.0" alignment="CENTER_LEFT">
@@ -604,38 +609,42 @@
 
                                         <!-- Tres gráficos -->
                                         <HBox spacing="10.0">
+    <VBox spacing="4.0" styleClass="ficha-section" HBox.hgrow="ALWAYS">
+        <children>
+            <Label text="Por sexo" styleClass="ficha-title"/>
+            <PieChart fx:id="chartSexo" prefHeight="220.0"
+                      legendVisible="true" labelsVisible="true"/>
+        </children>
+    </VBox>
 
-                                            <VBox spacing="4.0" styleClass="ficha-section" HBox.hgrow="ALWAYS">
-                                                <children>
-                                                    <Label text="Por sexo" styleClass="ficha-title"/>
-                                                    <PieChart fx:id="chartSexo" prefHeight="220.0"
-                                                              legendVisible="true" labelsVisible="true"/>
-                                                </children>
-                                            </VBox>
+    <VBox spacing="4.0" styleClass="ficha-section" HBox.hgrow="ALWAYS">
+        <children>
+            <Label text="Por edad" styleClass="ficha-title"/>
+            <BarChart fx:id="chartEdad" prefHeight="220.0"
+                      legendVisible="false">
+                <xAxis><CategoryAxis label="Franja"/></xAxis>
+                <yAxis><NumberAxis label="Peregrinos"/></yAxis>
+            </BarChart>
+        </children>
+    </VBox>
+</HBox>
 
-                                            <VBox spacing="4.0" styleClass="ficha-section" HBox.hgrow="ALWAYS">
-                                                <children>
-                                                    <Label text="Por país" styleClass="ficha-title"/>
-                                                    <BarChart fx:id="chartPais" prefHeight="220.0"
-                                                              legendVisible="false">
-                                                        <xAxis><CategoryAxis label="País"/></xAxis>
-                                                        <yAxis><NumberAxis label="Peregrinos"/></yAxis>
-                                                    </BarChart>
-                                                </children>
-                                            </VBox>
-
-                                            <VBox spacing="4.0" styleClass="ficha-section" HBox.hgrow="ALWAYS">
-                                                <children>
-                                                    <Label text="Por edad" styleClass="ficha-title"/>
-                                                    <BarChart fx:id="chartEdad" prefHeight="220.0"
-                                                              legendVisible="false">
-                                                        <xAxis><CategoryAxis label="Franja"/></xAxis>
-                                                        <yAxis><NumberAxis label="Peregrinos"/></yAxis>
-                                                    </BarChart>
-                                                </children>
-                                            </VBox>
-
-                                        </HBox>
+<!-- Gráfico por país abajo con scroll -->
+<VBox spacing="4.0" styleClass="ficha-section">
+    <children>
+        <Label text="Por país" styleClass="ficha-title"/>
+        <ScrollPane fitToHeight="true" hbarPolicy="AS_NEEDED" vbarPolicy="NEVER"
+                    styleClass="ventas-scroll">
+            <content>
+                <BarChart fx:id="chartPais" prefHeight="220.0" prefWidth="1200.0"
+                          legendVisible="false">
+                    <xAxis><CategoryAxis label="País"/></xAxis>
+                    <yAxis><NumberAxis label="Peregrinos"/></yAxis>
+                </BarChart>
+            </content>
+        </ScrollPane>
+    </children>
+</VBox>
                                     </children>
                                 </VBox>
 

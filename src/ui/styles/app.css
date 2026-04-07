@@ -470,8 +470,35 @@
     -fx-border-width: 1.2;
 }
 
+/* ===== Gráficos ===== */
 
+/* PieChart - sectores */
+.chart-pie.default-color0 { -fx-pie-color: #4a7596; }
+.chart-pie.default-color1 { -fx-pie-color: #79a4b7; }
+.chart-pie.default-color2 { -fx-pie-color: #b0ccd8; }
 
+/* BarChart - barras */
+.default-color0.chart-bar { -fx-bar-fill: #4a7596; }
+.default-color1.chart-bar { -fx-bar-fill: #79a4b7; }
+.default-color2.chart-bar { -fx-bar-fill: #b0ccd8; }
+.default-color3.chart-bar { -fx-bar-fill: #6b8fa0; }
+.default-color4.chart-bar { -fx-bar-fill: #8faebb; }
+.default-color5.chart-bar { -fx-bar-fill: #a3c0cc; }
+.default-color6.chart-bar { -fx-bar-fill: #5e8296; }
+.default-color7.chart-bar { -fx-bar-fill: #92b5c4; }
+
+.chart-horizontal-grid-lines {
+    -fx-stroke: rgba(0,0,0,0.1);
+}
+
+.chart-vertical-grid-lines {
+    -fx-stroke: rgba(0,0,0,0.1);
+}
+
+.axis {
+    -fx-tick-label-fill: #1c3e4f;
+    -fx-font-size: 11px;
+}
 
 
 

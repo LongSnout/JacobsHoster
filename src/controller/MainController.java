@@ -9,6 +9,7 @@ import java.util.List;
 import exception.DatabaseException;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.scene.chart.CategoryAxis;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
@@ -3090,12 +3091,111 @@ public class MainController {
 	
 	@FXML
 	private void onActualizarIngresos() {
-	    // TODO
+	    if (dpIngresosDesde.getValue() == null || dpIngresosHasta.getValue() == null) return;
+
+	    try {
+	        LocalDate desde = dpIngresosDesde.getValue();
+	        LocalDate hasta = dpIngresosHasta.getValue();
+
+	        model.ResumenVentas resumen = VentaLineaService.obtenerResumenRango(1, desde, hasta);
+	        java.util.List<String[]> desglose = VentaLineaService.obtenerDesgloseRango(1, desde, hasta);
+
+	        vboxDesglosIngresos.getChildren().clear();
+
+	        // Desglose por producto
+	        boolean hayEstancias = desglose.stream().anyMatch(d -> "1".equals(d[3]));
+	        boolean hayProductos = desglose.stream().anyMatch(d -> "0".equals(d[3]));
+
+	        if (hayEstancias) {
+	            Label lbl = new Label("— Estancias —");
+	            lbl.setStyle("-fx-font-size: 11px; -fx-text-fill: #4a7596; -fx-font-weight: bold;");
+	            vboxDesglosIngresos.getChildren().add(lbl);
+	            for (String[] fila : desglose) {
+	                if ("1".equals(fila[3])) {
+	                    Label l = new Label(String.format("%s  x%s  =  %.2f €",
+	                        fila[0], fila[1], Double.parseDouble(fila[2])));
+	                    l.getStyleClass().add("ventas-resumen-item");
+	                    vboxDesglosIngresos.getChildren().add(l);
+	                }
+	            }
+	        }
+
+	        if (hayProductos) {
+	            Label lbl = new Label("— Productos —");
+	            lbl.setStyle("-fx-font-size: 11px; -fx-text-fill: #4a7596; -fx-font-weight: bold;");
+	            vboxDesglosIngresos.getChildren().add(lbl);
+	            for (String[] fila : desglose) {
+	                if ("0".equals(fila[3])) {
+	                    Label l = new Label(String.format("%s  x%s  =  %.2f €",
+	                        fila[0], fila[1], Double.parseDouble(fila[2])));
+	                    l.getStyleClass().add("ventas-resumen-item");
+	                    vboxDesglosIngresos.getChildren().add(l);
+	                }
+	            }
+	        }
+
+	        // Por tipo de pago
+	        if (!resumen.getPorTipoPago().isEmpty()) {
+	            Label lbl = new Label("— Por tipo de pago —");
+	            lbl.setStyle("-fx-font-size: 11px; -fx-text-fill: #4a7596; -fx-font-weight: bold;");
+	            vboxDesglosIngresos.getChildren().add(lbl);
+	            resumen.getPorTipoPago().forEach((tipo, total) -> {
+	                Label l = new Label(tipo + ":  " + String.format("%.2f €", total));
+	                l.getStyleClass().add("ventas-resumen-item");
+	                vboxDesglosIngresos.getChildren().add(l);
+	            });
+	        }
+
+	        lblTotalCaja.setText(String.format("Total caja:  %.2f €", resumen.getTotalGeneral()));
+
+	    } catch (Exception e) {
+	        System.out.println("Error actualizando ingresos: " + e.getMessage());
+	    }
 	}
 
 	@FXML
 	private void onActualizarOcupacion() {
-	    // TODO
+	    if (dpOcupacionDesde.getValue() == null || dpOcupacionHasta.getValue() == null) return;
+
+	    try {
+	        LocalDate desde = dpOcupacionDesde.getValue();
+	        LocalDate hasta = dpOcupacionHasta.getValue();
+
+	        int totalCamas = CamaService.contarCapacidadTotal();
+	        int totalPeregrinos = 0;
+	        int totalDias = 0;
+	        int sumaOcupacion = 0;
+	        int diaMasOcupadoNum = 0;
+	        LocalDate diaMasOcupado = null;
+
+	        LocalDate dia = desde;
+	        while (!dia.isAfter(hasta)) {
+	            int ocupadas = EstanciaService.contarPlazasOcupadasEnFecha(1, dia);
+	            totalPeregrinos += ocupadas;
+	            sumaOcupacion += ocupadas;
+	            totalDias++;
+
+	            if (ocupadas > diaMasOcupadoNum) {
+	                diaMasOcupadoNum = ocupadas;
+	                diaMasOcupado = dia;
+	            }
+
+	            dia = dia.plusDays(1);
+	        }
+
+	        int ocupacionMedia = totalDias > 0 && totalCamas > 0
+	            ? (int) Math.round((double) sumaOcupacion / totalDias / totalCamas * 100)
+	            : 0;
+
+	        lblPeregrinosTotales.setText("Peregrinos totales: " + totalPeregrinos);
+	        lblPlazasTotalesInformes.setText("Plazas totales: " + totalCamas);
+	        lblOcupacionMedia.setText("Ocupación media: " + ocupacionMedia + "%");
+	        lblDiaMasOcupado.setText("Día más ocupado: " +
+	            (diaMasOcupado != null ? diaMasOcupado.format(FECHA_ES) + " (" + diaMasOcupadoNum + ")" : "-"));
+
+	    } catch (Exception e) {
+	        System.out.println("Error actualizando ocupación: " + e.getMessage());
+	    }
 	}
 
 	@FXML
@@ -3114,7 +3214,49 @@ public class MainController {
 
 	@FXML
 	private void onActualizarEstadisticas() {
-	    // TODO
+	    try {
+	        // Gráfico por sexo
+	        java.util.Map<String, Integer> porSexo = PeregrinoService.contarPorSexo(1, anioActual);
+	        chartSexo.getData().clear();
+	        porSexo.forEach((sexo, cantidad) -> {
+	            String etiqueta = "H".equals(sexo) ? "Hombre" : "M".equals(sexo) ? "Mujer" : "Otro";
+	            chartSexo.getData().add(new javafx.scene.chart.PieChart.Data(
+	                etiqueta + " (" + cantidad + ")", cantidad));
+	        });
+
+	     // Gráfico por país
+	        java.util.Map<String, Integer> porPais = PeregrinoService.contarPorPais(1, anioActual);
+	        chartPais.getData().clear();
+	        ((javafx.scene.chart.CategoryAxis) chartPais.getXAxis()).getCategories().clear();
+	        javafx.scene.chart.XYChart.Series<String, Number> seriePais = new javafx.scene.chart.XYChart.Series<>();
+	        for (java.util.Map.Entry<String, Integer> entry : porPais.entrySet()) {
+	            seriePais.getData().add(new javafx.scene.chart.XYChart.Data<>(entry.getKey(), entry.getValue()));
+	        }
+	        chartPais.getData().add(seriePais);
+	        
+	        
+	        Platform.runLater(() -> {
+	            chartPais.getXAxis().setTickLabelRotation(-45);
+	            ((CategoryAxis) chartPais.getXAxis()).setTickMarkVisible(true);
+	            ((CategoryAxis) chartPais.getXAxis()).setTickLabelsVisible(true);
+	        });
+
+	        // Gráfico por edad
+	        java.util.Map<String, Integer> porEdad = PeregrinoService.contarPorFranjaEdad(1, anioActual);
+	        chartEdad.getData().clear();
+	        ((CategoryAxis) chartEdad.getXAxis()).getCategories().clear();
+	        javafx.scene.chart.XYChart.Series<String, Number> serieEdad = new javafx.scene.chart.XYChart.Series<>();
+	        for (java.util.Map.Entry<String, Integer> entry : porEdad.entrySet()) {
+	            serieEdad.getData().add(new javafx.scene.chart.XYChart.Data<>(entry.getKey(), entry.getValue()));
+	        }
+	        chartEdad.getData().add(serieEdad);
+	        chartEdad.getXAxis().setTickLabelRotation(-45);
+	        ((CategoryAxis) chartEdad.getXAxis()).setTickMarkVisible(true);
+	        ((CategoryAxis) chartEdad.getXAxis()).setTickLabelsVisible(true);
+
+	    } catch (Exception e) {
+	        System.out.println("Error actualizando estadísticas: " + e.getMessage());
+	    }
 	}
 	
 	
