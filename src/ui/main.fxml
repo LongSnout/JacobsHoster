@@ -27,6 +27,10 @@
 <?import javafx.scene.chart.CategoryAxis?>
 <?import javafx.scene.chart.NumberAxis?>
 <?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.control.Hyperlink?>
+
 
 
 
@@ -660,11 +664,47 @@
           <!-- ===================================================== -->
           <!-- PESTAÑA: SERVIDOR EN LA NUBE                            -->
           <!-- ===================================================== -->
-          <Tab text="Servidor en la nube">
-            <content>
-              <AnchorPane minHeight="0.0" minWidth="0.0" />
-            </content>
-          </Tab>
+<Tab text="Servidor en la nube">
+    <content>
+        <AnchorPane minHeight="0.0" minWidth="0.0">
+            <children>
+                <VBox alignment="CENTER" spacing="16.0"
+                      AnchorPane.topAnchor="0.0" AnchorPane.bottomAnchor="0.0"
+                      AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
+                    <children>
+                        <VBox alignment="CENTER" spacing="12.0" styleClass="ficha-section"
+                              maxWidth="600.0">
+                            <padding>
+                                <Insets top="20.0" right="20.0" bottom="20.0" left="20.0"/>
+                            </padding>
+                            <children>
+                                <Label text="Por solo 12€ al mes, podrás activar la nube para que los huéspedes puedan enviar sus datos con antelación."
+                                       wrapText="true" textAlignment="CENTER"
+                                       styleClass="ficha-label"
+                                       
+                                       style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
+                                       
+                                <ImageView fitWidth="400.0" fitHeight="300.0"
+                                           preserveRatio="true" pickOnBounds="true">
+                                    <image>
+                                        <Image url="@images/Cartel_Albergue_Gato.png"/>
+                                    </image>
+                                </ImageView>
+                                <Label text="Contáctanos por email:"
+       								textAlignment="CENTER"
+       								style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
+								<Hyperlink text="contacto@snoutserv.com"
+           							onAction="#onContactoEmail"
+           							style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
+                                       
+                            </children>
+                        </VBox>
+                    </children>
+                </VBox>
+            </children>
+        </AnchorPane>
+    </content>
+</Tab>
 
         </tabs>
       </TabPane>

@@ -13,6 +13,7 @@ import javafx.scene.chart.CategoryAxis;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
@@ -327,7 +328,7 @@ public class MainController {
 		if (noHayNada) {
 			return;
 		}
-
+		
 		tfNacionalidad.setText(previoNacionalidad);
 		tfPais.setText(previoPais);
 		tfFechaEntrada.setText(previoFechaEntrada);
@@ -1304,7 +1305,7 @@ public class MainController {
 		String pais = trim(tfPais).toUpperCase();
 		boolean esEsp = "ESP".equals(pais);
 
-		// Solo ocultamos el campo (como pediste)
+		// Solo ocultamos el campo
 		tfCodigoMunicipio.setVisible(esEsp);
 		tfCodigoMunicipio.setManaged(esEsp);
 
@@ -1313,7 +1314,7 @@ public class MainController {
 	}
 
 	// --------------------------
-	// “Perfil naranja” en lista
+	// Perfil naranja en lista
 	// --------------------------
 
 	private boolean peregrinoTieneErrores(Peregrino p) {
@@ -1469,7 +1470,7 @@ public class MainController {
 			return;
 		}
 
-		System.out.println("Cargando países desde: " + rutaUsada);
+		//System.out.println("Cargando países desde: " + rutaUsada);
 
 		try (BufferedReader br = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
 
@@ -1496,10 +1497,10 @@ public class MainController {
 				listaPaises.add(new Pais(iso3, iso2, nombre));
 			}
 
-			System.out.println("Países cargados: " + listaPaises.size());
+			//System.out.println("Países cargados: " + listaPaises.size());
 
 		} catch (Exception e) {
-			System.out.println("No se pudo cargar CodigoISOPaises.csv: " + e.getMessage());
+			System.out.println("No se pudo cargar la tabla de codigos ISO de paises: " + e.getMessage());
 			e.printStackTrace();
 		}
 	}
@@ -1673,18 +1674,18 @@ public class MainController {
 			// sugerenciasMunicipio.show(tfCodigoMunicipio, Side.BOTTOM, 0, 0);
 		});
 
-		// TAB (y opcional ENTER) para aceptar la primera sugerencia
+		// TAB para aceptar la primera sugerencia
 		tfCodigoMunicipio.addEventFilter(javafx.scene.input.KeyEvent.KEY_PRESSED, ev -> {
 
 			if (!sugerenciasMunicipio.isShowing())
 				return;
 
 			// TAB: aceptar primera sugerencia
-			if (ev.getCode() == javafx.scene.input.KeyCode.TAB /* || ev.getCode() == javafx.scene.input.KeyCode.ENTER */) {
+			if (ev.getCode() == javafx.scene.input.KeyCode.TAB) {
 
 				if (!sugerenciasMunicipio.getItems().isEmpty()) {
-					// el primero debería ser el mejor (tu ranking ya lo ordena)
-					javafx.scene.control.MenuItem mi = sugerenciasMunicipio.getItems().get(0);
+					
+					MenuItem mi = sugerenciasMunicipio.getItems().get(0);
 
 					if (mi instanceof CustomMenuItem cmi) {
 						// Ejecuta el mismo handler que cuando haces click
@@ -1711,7 +1712,7 @@ public class MainController {
 
 		for (Municipio m : base) {
 
-			// nombres con "/": indexamos cada parte
+			// nombres con "/"
 			String[] variantes = m.nombre.split("/");
 			boolean match = false;
 			boolean start = false;
@@ -1734,7 +1735,7 @@ public class MainController {
 				contiene.add(m);
 		}
 
-		// empieza primero, luego contiene
+		// empieza primero luego contiene
 		List<Municipio> res = new ArrayList<>(empieza);
 		res.addAll(contiene);
 		return res;
@@ -1742,7 +1743,7 @@ public class MainController {
 
 	private void activarAutocompletarPais(TextField tf) {
 
-		final ContextMenu menu = new ContextMenu(); // 👈 uno por TextField, no compartido
+		final ContextMenu menu = new ContextMenu(); // uno por TextField, no compartido
 
 		tf.textProperty().addListener((obs, oldVal, newVal) -> {
 			if (newVal == null)
@@ -1755,7 +1756,7 @@ public class MainController {
 
 			String query = normalizar(newVal);
 
-			// si ya parece ISO3, no molestamos
+			// si ya parece ISO3 no sale nada
 			if (query.matches("^[A-Z]{3}$")) {
 				menu.hide();
 				return;
@@ -1811,7 +1812,7 @@ public class MainController {
 			if (!isNow) {
 				menu.hide();
 
-				// 👇 al perder foco: si escribió un nombre, lo intentamos convertir a ISO3
+				// al perder foco, si escribió un nombre, lo intentamos convertir a ISO3
 				String iso = resolverIso3DesdeTexto(tf.getText());
 				if (iso != null) {
 					tf.setText(iso);
@@ -1869,11 +1870,11 @@ public class MainController {
 				contiene.add(p);
 		}
 
-		// Orden: empieza > contiene
+		// Orden, empieza > contiene
 		List<Pais> res = new ArrayList<>(empieza);
 		res.addAll(contiene);
 
-		// (Opcional) quitar duplicados por ISO3, por si tu CSV mete repetidos
+		// quitar duplicados por ISO3, por si el CSV mete repetidos
 		Map<String, Pais> uniq = new LinkedHashMap<>();
 		for (Pais p : res)
 			uniq.putIfAbsent(p.iso3, p);
@@ -1903,7 +1904,7 @@ public class MainController {
 			}
 		}
 
-		// match exacto por nombre (o variantes separadas por "/")
+		// match exacto por nombre o variantes separadas por "/"
 		for (Pais p : listaPaises) {
 			String[] variantes = p.nombre.split("/");
 			for (String v : variantes) {
@@ -1934,7 +1935,7 @@ public class MainController {
 		if (t.isBlank())
 			return null;
 
-		// 1️⃣ Intentamos formatos con año 4 dígitos primero
+		// Intentamos formatos con año 4 dígitos primero
 		for (DateTimeFormatter f : FORMATOS_ACEPTADOS) {
 			try {
 				return LocalDate.parse(t, f);
@@ -1942,7 +1943,7 @@ public class MainController {
 			}
 		}
 
-		// 2️⃣ Intentamos formatos con año 2 dígitos (controlando nosotros el siglo)
+		// Intentamos formatos con año 2 dígitos
 		try {
 			String t2 = t.replace('-', '/');
 
@@ -1953,9 +1954,6 @@ public class MainController {
 				int mes = Integer.parseInt(parts[1]);
 				int yy = Integer.parseInt(parts[2]);
 
-				// Regla práctica:
-				// si yy <= (añoActual % 100) -> 20yy
-				// si yy > (añoActual % 100) -> 19yy
 				int now2 = LocalDate.now().getYear() % 100;
 				int year = (yy <= now2) ? (2000 + yy) : (1900 + yy);
 
@@ -2091,7 +2089,7 @@ public class MainController {
 		} catch (DatabaseException e) {
 			System.out.println(e.getMessage());
 			e.printStackTrace();
-			// Si falla, no bloqueamos: creamos una estancia en blanco
+			// Si falla no bloquea, crea una estancia en blanco
 			estanciaActual = new Estancia();
 			estanciaActual.setIdPeregrino(p.getIdPeregrino());
 			estanciaActual.setIdAlbergue(1);
@@ -2138,9 +2136,9 @@ public class MainController {
 		if (q.isBlank())
 			return null;
 
-		// 🔹 Caso especial clave:
+		// Caso especial clave:
 		// Si el usuario escribe más de 3 letras y empieza por un ISO3,
-		// lo convertimos directamente (ESPA -> ESP, PORT -> PRT, etc.)
+		// lo convertimos directamente
 		if (q.length() > 3) {
 			for (Pais p : listaPaises) {
 				if (q.startsWith(normalizar(p.iso3))) {
@@ -2149,12 +2147,12 @@ public class MainController {
 			}
 		}
 
-		// 1) exacto por ISO o nombre
+		// exacto por ISO o nombre
 		Pais exacto = buscarPaisExactoPorNombreOIso(texto);
 		if (exacto != null)
 			return exacto;
 
-		// 2) empieza por (en nombre/variantes)
+		// empieza por (en nombre/variantes)
 		for (Pais p : listaPaises) {
 			if (normalizar(p.iso3).startsWith(q) || normalizar(p.iso2).startsWith(q))
 				return p;
@@ -2165,7 +2163,7 @@ public class MainController {
 			}
 		}
 
-		// 3) contiene (último recurso)
+		// contiene
 		for (Pais p : listaPaises) {
 			if (normalizar(p.iso3).contains(q) || normalizar(p.iso2).contains(q))
 				return p;
@@ -2217,7 +2215,6 @@ public class MainController {
 		dpFechaLista.setDisable(buscando);
 		btnDiaSiguiente.setDisable(buscando);
 
-		// opcional: dar sensación visual de "apagado"
 		btnDiaAnterior.setOpacity(buscando ? 0.5 : 1.0);
 		dpFechaLista.setOpacity(buscando ? 0.5 : 1.0);
 		btnDiaSiguiente.setOpacity(buscando ? 0.5 : 1.0);
@@ -2626,7 +2623,7 @@ public class MainController {
 	            return;
 	        }
 	    }
-	    // No existe -> crear si cantidad > 0
+	    // No existe: crear si cantidad > 0
 	    if (cantidad > 0) {
 	        VentaLinea nueva = new VentaLinea();
 	        nueva.setIdProducto(p.getIdProducto());
@@ -2769,7 +2766,7 @@ public class MainController {
 	    lvTarifas.setItems(javafx.collections.FXCollections.observableArrayList(tarifas));
 	    lvProductosCatalogo.setItems(javafx.collections.FXCollections.observableArrayList(productos));
 
-	    // Al seleccionar una tarifa -> rellenar campos
+	    // Al seleccionar una tarifa : rellenar campos
 	    lvTarifas.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
 	        if (newVal != null) {
 	            tfNombreTarifa.setText(newVal.getNombre());
@@ -2777,7 +2774,7 @@ public class MainController {
 	        }
 	    });
 
-	    // Al seleccionar un producto -> rellenar campos
+	    // Al seleccionar un producto: rellenar campos
 	    lvProductosCatalogo.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
 	        if (newVal != null) {
 	            tfNombreProducto.setText(newVal.getNombre());
@@ -3259,7 +3256,15 @@ public class MainController {
 	    }
 	}
 	
-	
+	@FXML
+	private void onContactoEmail() {
+	    try {
+	        java.awt.Desktop.getDesktop().mail(
+	            new java.net.URI("mailto:contacto@snoutserv.com"));
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	    }
+	}
 	
 	
 	// FUTURO:
