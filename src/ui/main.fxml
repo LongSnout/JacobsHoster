@@ -678,7 +678,7 @@
                                 <Insets top="20.0" right="20.0" bottom="20.0" left="20.0"/>
                             </padding>
                             <children>
-                                <Label text="Por solo 12€ al mes, podrás activar la nube para que los huéspedes puedan enviar sus datos con antelación."
+                                <Label text="Activa la nube por 15€ al mes y permite que tus huéspedes envíen sus datos con antelación."
                                        wrapText="true" textAlignment="CENTER"
                                        styleClass="ficha-label"
                                        
@@ -692,10 +692,10 @@
                                 </ImageView>
                                 <Label text="Contáctanos por email:"
        								textAlignment="CENTER"
-       								style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
+       								style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
 								<Hyperlink text="contacto@snoutserv.com"
            							onAction="#onContactoEmail"
-           							style="-fx-font-size: 15px; -fx-font-weight: bold;"/>
+           							style="-fx-font-size: 18px; -fx-font-weight: bold;"/>
                                        
                             </children>
                         </VBox>
