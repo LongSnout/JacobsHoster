@@ -81,8 +81,92 @@ public class PrerregistroService {
     }
 
 
-    public static void recibirDesdeNube() {
+    public static int recibirDesdeNube() {
+        try {
+            java.net.URL url = new java.net.URI(
+                config.AppConfig.API_BASE_URL + "/api/prerregistros"
+            ).toURL();
 
+            java.net.HttpURLConnection http = (java.net.HttpURLConnection) url.openConnection();
+            http.setRequestMethod("GET");
+            http.setRequestProperty("X-API-KEY", config.AppConfig.API_TOKEN);
+            http.setConnectTimeout(10_000);
+            http.setReadTimeout(15_000);
+
+            int status = http.getResponseCode();
+            if (status != 200) {
+                System.err.println("[Sync] API respondió con código: " + status);
+                return 0;
+            }
+
+            String json;
+            try (java.io.InputStream is = http.getInputStream();
+                 java.io.BufferedReader br = new java.io.BufferedReader(
+                     new java.io.InputStreamReader(is, java.nio.charset.StandardCharsets.UTF_8))) {
+                StringBuilder sb = new StringBuilder();
+                String linea;
+                while ((linea = br.readLine()) != null) sb.append(linea);
+                json = sb.toString();
+            }
+
+            org.json.JSONArray array = new org.json.JSONArray(json);
+            int insertados = 0;
+
+            try (Connection conn = DBManager.getConnection()) {
+                for (int i = 0; i < array.length(); i++) {
+                    org.json.JSONObject obj = array.getJSONObject(i);
+
+                    String idNube = obj.optString("idPrerregistroNube", null);
+                    if (idNube == null || idNube.isBlank()) continue;
+
+                    // Evitar duplicados
+                    if (PrerregistroDAO.existePorIdNube(conn, idNube)) continue;
+
+                    Prerregistro pr = new Prerregistro();
+                    pr.setIdPrerregistroNube(idNube);
+                    pr.setIdAlbergue(config.AppConfig.ID_ALBERGUE);
+                    pr.setEstadoPrerregistro(ESTADO_PENDIENTE); // siempre PENDIENTE en local
+
+                    // Fechas: vienen como string ISO o array Jackson — optString las deja como string
+                    pr.setFechaEnvio(obj.optString("fechaEnvio", LocalDate.now().toString()));
+                    pr.setFechaPrevistaLlegada(obj.optString("fechaPrevistaLlegada", LocalDate.now().toString()));
+
+                    pr.setRol(obj.optString("rol", "VI"));
+                    pr.setNombre(obj.optString("nombre", ""));
+                    pr.setApellido1(obj.optString("apellido1", ""));
+                    pr.setApellido2(obj.optString("apellido2", null));
+
+                    pr.setTipoDocumento(obj.optString("tipoDocumento", ""));
+                    pr.setNumeroDocumento(obj.optString("numeroDocumento", ""));
+
+                    pr.setFechaNacimiento(obj.optString("fechaNacimiento", null));
+                    pr.setNacionalidad(obj.optString("nacionalidad", null));
+                    pr.setSexo(obj.optString("sexo", null));
+
+                    pr.setDireccion(obj.optString("direccion", null));
+                    pr.setDireccionComplementaria(obj.optString("direccionComplementaria", null));
+                    pr.setCodigoMunicipio(obj.optString("codigoMunicipio", null));
+                    pr.setNombreMunicipio(obj.optString("nombreMunicipio", null));
+                    pr.setCodigoPostal(obj.optString("codigoPostal", null));
+                    pr.setPais(obj.optString("pais", null));
+
+                    pr.setTelefono1(obj.optString("telefono1", null));
+                    pr.setTelefono2(obj.optString("telefono2", null));
+                    pr.setCorreo(obj.optString("correo", null));
+                    pr.setParentesco(obj.optString("parentesco", null));
+
+                    PrerregistroDAO.insertar(conn, pr);
+                    insertados++;
+                }
+            }
+
+            System.out.println("[Sync] Prerregistros nuevos recibidos: " + insertados);
+            return insertados;
+
+        } catch (Exception e) {
+            System.err.println("[Sync] Error al recibir desde nube: " + e.getMessage());
+            return 0;
+        }
     }
 
 

@@ -53,13 +53,13 @@ public class AppConfig {
 	//Base de datos en la nube
     
     // TODO
-    public static final String API_BASE_URL = "https://tudominio/api";
+    public static final String API_BASE_URL = "https://api.snoutserv.com";
 
-    public static final String API_TOKEN = "CAMBIAR_EN_PRODUCCION";
+    public static final String API_TOKEN = "jacobs-api-key-2026";
     
     
     // Cada cuanto se hace el pull de datos desde la nube (segundos).
-    public static final int SYNC_INTERVAL_SECONDS = 10;
+    public static final int SYNC_INTERVAL_SECONDS = 300;
 
     // Cuántos días mantener preregistros pendientes antes de caducar
     public static final int PRERREGISTRO_CADUCIDAD_DIAS = 3;

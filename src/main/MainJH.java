@@ -4,6 +4,8 @@ import db.DBInit;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 public class MainJH extends Application {
@@ -20,12 +22,16 @@ public class MainJH extends Application {
         stage.setScene(scene);
         stage.setMinWidth(500.0);
         stage.setMinHeight(350.0);
+        
+        stage.getIcons().add(new Image(
+        	    getClass().getResourceAsStream("/ui/images/LogoApp.png")));
+        
         stage.show();
 
         // Avisar si se creó una BD nueva
         if (bdNueva) {
-            javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
-                    javafx.scene.control.Alert.AlertType.WARNING);
+            Alert alert = new javafx.scene.control.Alert(
+                    Alert.AlertType.WARNING);
             alert.setTitle("Base de datos nueva");
             alert.setHeaderText("Se ha creado una base de datos nueva");
             alert.setContentText(

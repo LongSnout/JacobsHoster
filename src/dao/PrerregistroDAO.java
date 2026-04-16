@@ -203,4 +203,23 @@ public class PrerregistroDAO {
 
         return pr;
     }
+    
+    
+    public static boolean existePorIdNube(Connection conn, String idNube) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM preregistro WHERE id_preregistro_nube = ?";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, idNube);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next() && rs.getInt(1) > 0;
+            }
+        }
+    }
+    
+    
+    
+    
 }
+
+
+
+

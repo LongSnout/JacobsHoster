@@ -18,8 +18,9 @@ import javafx.scene.control.TextField;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
 import model.Peregrino;
+import model.Prerregistro;
 import service.PeregrinoService;
-
+import service.PrerregistroService;
 import javafx.scene.control.TextArea;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -51,6 +52,7 @@ import model.Producto;
 import model.VentaLinea;
 import service.ProductoService;
 import service.VentaLineaService;
+import util.ItemLista;
 import javafx.scene.control.cell.TextFieldListCell;
 import javafx.util.StringConverter;
 
@@ -63,7 +65,7 @@ import xml.InformeXMLRWriter;
 public class MainController {
 
     // ===== Navegación y lista izquierda =====
-    @FXML private ListView<Peregrino> lvHuespedes;
+    @FXML private ListView<ItemLista> lvHuespedes;
     @FXML private Button btnDiaAnterior;
     @FXML private Button btnDiaSiguiente;
     @FXML private javafx.scene.control.DatePicker dpFechaLista;
@@ -175,6 +177,7 @@ public class MainController {
     private boolean cargandoFicha = false;
     private String documentoOriginalTipo = "";
     private String documentoOriginalNumero = "";
+    private Prerregistro prerregistroActual = null;
 
     // ===== Datos previos (copiar al siguiente registro) =====
     private String previoNacionalidad      = "";
@@ -312,6 +315,8 @@ public class MainController {
 		lblAnio.setText(String.valueOf(anioActual));
 		
 		
+		// Iniciar servicio de sincronización de prerregistros
+		sync.PrerregistroSyncService.iniciar(this::refrescarLista);
 
 	}
 
@@ -357,100 +362,156 @@ public class MainController {
 	// --------------------------
 
 	private void configurarListView() {
-		lvHuespedes.setCellFactory(lv -> new ListCell<>() {
-			@Override
-			protected void updateItem(Peregrino p, boolean empty) {
-				super.updateItem(p, empty);
+	    lvHuespedes.setCellFactory(lv -> new ListCell<>() {
+	        @Override
+	        protected void updateItem(ItemLista item, boolean empty) {
+	            super.updateItem(item, empty);
 
-				if (empty || p == null) {
-					setText(null);
-					setGraphic(null);
-					setStyle("");
-					return;
-				}
+	            if (empty || item == null) {
+	                setText(null);
+	                setGraphic(null);
+	                setStyle("");
+	                return;
+	            }
 
-				String nombre = safe(p.getNombre());
-				String a1 = safe(p.getApellido1());
-				String doc = (safe(p.getTipoDocumento()) + " " + safe(p.getNumeroDocumento())).trim();
+	            String label;
+	            boolean invalido = false;
+	            boolean nuevoHoy = false;
+	            boolean esPrerregistro = item.esPrerregistro();
 
-				String label = (nombre + " " + a1).trim();
-				if (!doc.isBlank())
-					label += "  (" + doc + ")";
-				if (label.isBlank())
-					label = "ID " + p.getIdPeregrino();
+	            if (esPrerregistro) {
+	                Prerregistro pr = item.getPrerregistro();
+	                String nombre = safe(pr.getNombre());
+	                String a1 = safe(pr.getApellido1());
+	                String doc = (safe(pr.getTipoDocumento()) + " " + safe(pr.getNumeroDocumento())).trim();
+	                label = (nombre + " " + a1).trim();
+	                if (!doc.isBlank()) label += "  (" + doc + ")";
+	            } else {
+	                Peregrino p = item.getPeregrino();
+	                String nombre = safe(p.getNombre());
+	                String a1 = safe(p.getApellido1());
+	                String doc = (safe(p.getTipoDocumento()) + " " + safe(p.getNumeroDocumento())).trim();
+	                label = (nombre + " " + a1).trim();
+	                if (!doc.isBlank()) label += "  (" + doc + ")";
+	                if (label.isBlank()) label = "ID " + p.getIdPeregrino();
+	                invalido = peregrinoTieneErrores(p);
+	                nuevoHoy = esEntradaHoy(p);
+	            }
 
-				boolean invalido = peregrinoTieneErrores(p);
-				boolean nuevoHoy = esEntradaHoy(p);
+	            Text punto = new Text();
+	            Text texto = new Text(label);
 
-				Text punto = new Text();
-				Text texto = new Text(label);
+	            if (esPrerregistro) {
+	                punto.setText("● ");
+	                punto.setStyle("-fx-fill: #c9a800;"); // amarillo
+	                texto.setStyle("-fx-fill: #888888;"); // gris
+	            } else if (nuevoHoy) {
+	                punto.setText("● ");
+	                punto.setStyle("-fx-fill: #1f6f3e;"); // verde
+	                texto.setStyle("-fx-fill: -fx-text-inner-color;");
+	            } else {
+	                punto.setText("");
+	                if (invalido) {
+	                    texto.setStyle("-fx-fill: #d97917;");
+	                } else {
+	                    texto.setStyle("-fx-fill: -fx-text-inner-color;");
+	                }
+	            }
 
-				if (nuevoHoy) {
-					punto.setText("● ");
-					punto.setStyle("-fx-fill: #1f6f3e;");
-				} else {
-					punto.setText("");
-				}
-
-				if (invalido) {
-					texto.setStyle("-fx-fill: #d97917;");
-				} else {
-					texto.setStyle("-fx-fill: -fx-text-inner-color;");
-				}
-
-				TextFlow flow = new TextFlow(punto, texto);
-
-				setText(null);
-				setGraphic(flow);
-				setStyle("");
-			}
-		});
+	            TextFlow flow = new TextFlow(punto, texto);
+	            setText(null);
+	            setGraphic(flow);
+	            setStyle("");
+	        }
+	    });
 	}
 
 
 
-	private void cargarEnFicha(Peregrino p) {
-		cargandoFicha = true;
+	private void cargarEnFicha(ItemLista item) {
+	    if (item.esPrerregistro()) {
+	        cargarEnFichaDesdePrerregistro(item.getPrerregistro());
+	    } else {
+	        cargarEnFichaDesdePeregrino(item.getPeregrino());
+	    }
+	}
 
-		try {
-			actual = p;
+	private void cargarEnFichaDesdePeregrino(Peregrino p) {
+	    cargandoFicha = true;
+	    try {
+	        actual = p;
+	        prerregistroActual = null;
 
-			documentoOriginalTipo = safe(p.getTipoDocumento());
-			documentoOriginalNumero = safe(p.getNumeroDocumento());
-			tfTipoDocumento.setText(safe(p.getTipoDocumento()));
-			tfNumeroDocumento.setText(safe(p.getNumeroDocumento()));
-			tfNombre.setText(safe(p.getNombre()));
-			tfApellido1.setText(safe(p.getApellido1()));
-			tfApellido2.setText(safe(p.getApellido2()));
-			tfFechaNacimiento.setText(safe(p.getFechaNacimiento()));
-			tfSexo.setText(safe(p.getSexo()));
-			tfNacionalidad.setText(safe(p.getNacionalidad()));
-			tfPais.setText(safe(p.getPais()));
-			tfCodigoPostal.setText(safe(p.getCodigoPostal()));
-			tfDireccion.setText(safe(p.getDireccion()));
-			tfDireccionComplementaria.setText(safe(p.getDireccionComplementaria()));
-			tfCodigoMunicipio.setText(safe(p.getCodigoMunicipio()));
-			tfNombreMunicipio.setText(safe(p.getNombreMunicipio()));
-			tfTelefono.setText(safe(p.getTelefono1()));
-			tfTelefono2.setText(safe(p.getTelefono2()));
-			tfCorreo.setText(safe(p.getCorreo()));
-			tfParentesco.setText(safe(p.getParentesco()));
-			tfFechaNacimiento.setText(fechaEsDesdeIso(p.getFechaNacimiento()));
-			tfSoporteDocumento.setText(safe(p.getSoporteDocumento()));
-			tfRol.setText(safe(p.getRol()));
+	        documentoOriginalTipo = safe(p.getTipoDocumento());
+	        documentoOriginalNumero = safe(p.getNumeroDocumento());
+	        tfTipoDocumento.setText(safe(p.getTipoDocumento()));
+	        tfNumeroDocumento.setText(safe(p.getNumeroDocumento()));
+	        tfNombre.setText(safe(p.getNombre()));
+	        tfApellido1.setText(safe(p.getApellido1()));
+	        tfApellido2.setText(safe(p.getApellido2()));
+	        tfFechaNacimiento.setText(fechaEsDesdeIso(p.getFechaNacimiento()));
+	        tfSexo.setText(safe(p.getSexo()));
+	        tfNacionalidad.setText(safe(p.getNacionalidad()));
+	        tfPais.setText(safe(p.getPais()));
+	        tfCodigoPostal.setText(safe(p.getCodigoPostal()));
+	        tfDireccion.setText(safe(p.getDireccion()));
+	        tfDireccionComplementaria.setText(safe(p.getDireccionComplementaria()));
+	        tfCodigoMunicipio.setText(safe(p.getCodigoMunicipio()));
+	        tfNombreMunicipio.setText(safe(p.getNombreMunicipio()));
+	        tfTelefono.setText(safe(p.getTelefono1()));
+	        tfTelefono2.setText(safe(p.getTelefono2()));
+	        tfCorreo.setText(safe(p.getCorreo()));
+	        tfParentesco.setText(safe(p.getParentesco()));
+	        tfSoporteDocumento.setText(safe(p.getSoporteDocumento()));
+	        tfRol.setText(safe(p.getRol()));
 
-			aplicarReglaMunicipio();
+	        aplicarReglaMunicipio();
+	        cargarEstanciaDe(p);
+	        cargarHabitacionYCamaEnFicha();
+	        marcarError(tfCodigoMunicipio, false);
+	        marcarError(tfNombreMunicipio, false);
 
-			cargarEstanciaDe(p);
-			cargarHabitacionYCamaEnFicha();
+	    } finally {
+	        cargandoFicha = false;
+	    }
+	}
 
+	private void cargarEnFichaDesdePrerregistro(Prerregistro pr) {
+	    cargandoFicha = true;
+	    try {
+	        actual = null;
+	        prerregistroActual = pr;
 
-			marcarError(tfCodigoMunicipio, false);
-			marcarError(tfNombreMunicipio, false);
+	        documentoOriginalTipo = safe(pr.getTipoDocumento());
+	        documentoOriginalNumero = safe(pr.getNumeroDocumento());
+	        tfTipoDocumento.setText(safe(pr.getTipoDocumento()));
+	        tfNumeroDocumento.setText(safe(pr.getNumeroDocumento()));
+	        tfNombre.setText(safe(pr.getNombre()));
+	        tfApellido1.setText(safe(pr.getApellido1()));
+	        tfApellido2.setText(safe(pr.getApellido2()));
+	        tfFechaNacimiento.setText(fechaEsDesdeIso(pr.getFechaNacimiento()));
+	        tfSexo.setText(safe(pr.getSexo()));
+	        tfNacionalidad.setText(safe(pr.getNacionalidad()));
+	        tfPais.setText(safe(pr.getPais()));
+	        tfCodigoPostal.setText(safe(pr.getCodigoPostal()));
+	        tfDireccion.setText(safe(pr.getDireccion()));
+	        tfDireccionComplementaria.setText(safe(pr.getDireccionComplementaria()));
+	        tfCodigoMunicipio.setText(safe(pr.getCodigoMunicipio()));
+	        tfNombreMunicipio.setText(safe(pr.getNombreMunicipio()));
+	        tfTelefono.setText(safe(pr.getTelefono1()));
+	        tfTelefono2.setText(safe(pr.getTelefono2()));
+	        tfCorreo.setText(safe(pr.getCorreo()));
+	        tfParentesco.setText(safe(pr.getParentesco()));
+	        tfRol.setText(safe(pr.getRol()));
+	        tfSoporteDocumento.setText(""); // no viene en prerregistro
 
-		} finally {
-			cargandoFicha = false;
-		}
+	        aplicarReglaMunicipio();
+	        marcarError(tfCodigoMunicipio, false);
+	        marcarError(tfNombreMunicipio, false);
+
+	    } finally {
+	        cargandoFicha = false;
+	    }
 	}
 
 
@@ -587,6 +648,18 @@ public class MainController {
 			}
 			
 			EstanciaService.guardar(estanciaActual);
+			
+			// Si venía de un prerregistro, marcarlo como ACEPTADO
+			if (prerregistroActual != null) {
+			    try {
+			        PrerregistroService.marcarAceptado(
+			            prerregistroActual.getIdPrerregistro()
+			        );
+			    } catch (Exception e) {
+			        System.out.println("No se pudo marcar prerregistro como aceptado: " + e.getMessage());
+			    }
+			    prerregistroActual = null;
+			}
 
 			// Guardar líneas de venta
 			VentaLineaService.guardarLineas(estanciaActual.getIdEstancia(), lineasVentaActuales);
@@ -1033,45 +1106,67 @@ public class MainController {
 	@FXML
 	private void onEliminarFicha() {
 
-		if (actual == null || actual.getIdPeregrino() == 0) {
-			nuevaFicha();
-			return;
-		}
+	    // Si es un prerregistro pendiente, volver a PENDIENTE (o simplemente limpiar ficha)
+	    if (prerregistroActual != null) {
+	        // No se borra nada, solo se limpia la ficha
+	        prerregistroActual = null;
+	        nuevaFicha();
+	        return;
+	    }
 
-		try {
-			PeregrinoService.eliminar(actual.getIdPeregrino());
+	    if (actual == null || actual.getIdPeregrino() == 0) {
+	        nuevaFicha();
+	        return;
+	    }
 
-			refrescarLista();
-			nuevaFicha();
+	    try {
+	        PeregrinoService.eliminar(actual.getIdPeregrino());
 
-		} catch (DatabaseException e) {
-			System.out.println(e.getMessage());
-			e.printStackTrace();
-		}
+	        refrescarLista();
+	        nuevaFicha();
+
+	    } catch (DatabaseException e) {
+	        System.out.println(e.getMessage());
+	        e.printStackTrace();
+	    }
 	}
 	
 	private void refrescarLista() {
-		try {
-			String filtro = trim(tfBuscarHuesped);
+	    try {
+	        String filtro = trim(tfBuscarHuesped);
 
-			List<Peregrino> lista;
+	        List<ItemLista> items = new java.util.ArrayList<>();
 
-			if (filtro.isBlank()) {
-				lista = EstanciaService.listarPeregrinosPresentesPorDia(1, fechaLista);
-			} else {
-				lista = PeregrinoService.buscarGlobal(filtro);
-			}
+	        if (filtro.isBlank()) {
+	            // Peregrinos del día
+	            EstanciaService.listarPeregrinosPresentesPorDia(1, fechaLista)
+	                .stream()
+	                .map(ItemLista::new)
+	                .forEach(items::add);
 
-			lvHuespedes.setItems(FXCollections.observableArrayList(lista));
+	            // Prerregistros pendientes mezclados
+	            PrerregistroService.listarPendientes()
+	                .stream()
+	                .map(ItemLista::new)
+	                .forEach(items::add);
 
-		} catch (DatabaseException e) {
-			System.out.println(e.getMessage());
-			e.printStackTrace();
-			lvHuespedes.setItems(FXCollections.observableArrayList());
-		}
+	        } else {
+	            PeregrinoService.buscarGlobal(filtro)
+	                .stream()
+	                .map(ItemLista::new)
+	                .forEach(items::add);
+	        }
 
-		refrescarIndicadorPlazas();
-		cargarGruposExistentes();
+	        lvHuespedes.setItems(FXCollections.observableArrayList(items));
+
+	    } catch (DatabaseException e) {
+	        System.out.println(e.getMessage());
+	        e.printStackTrace();
+	        lvHuespedes.setItems(FXCollections.observableArrayList());
+	    }
+
+	    refrescarIndicadorPlazas();
+	    cargarGruposExistentes();
 	}
 
 	/*

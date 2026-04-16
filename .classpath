@@ -8,5 +8,6 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="lib" path="C:/Users/Berto/Desktop/Desarrollo de Aplicaciones Multiplataforma/1Curso 2025-2026/Ejercicios Eclipse/JacobsHoster/lib/sqlite-jdbc-3.50.3.0.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/JavaFX21"/>
+	<classpathentry kind="lib" path="lib/json-20240303.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
