@@ -59,7 +59,7 @@ public class AppConfig {
     
     
     // Cada cuanto se hace el pull de datos desde la nube (segundos).
-    public static final int SYNC_INTERVAL_SECONDS = 300;
+    public static final int SYNC_INTERVAL_SECONDS = 30;
 
     // Cuántos días mantener preregistros pendientes antes de caducar
     public static final int PRERREGISTRO_CADUCIDAD_DIAS = 3;

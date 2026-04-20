@@ -2620,9 +2620,13 @@ public class MainController {
 	        List<Producto> productos = ProductoService.listarActivos();
 	        vboxProductos.getChildren().clear();
 
+	        boolean primeraEstanciaVista = false;
 	        for (Producto p : productos) {
-	            // cantidad inicial: estancias arrancan en 1, resto en 0
-	            int cantidadInicial = p.isEsEstancia() ? 1 : 0;
+	            int cantidadInicial = 0;
+	            if (p.isEsEstancia() && !primeraEstanciaVista) {
+	                cantidadInicial = 1;
+	                primeraEstanciaVista = true;
+	            }
 
 	            // buscar si ya hay una línea activa para este producto
 	            for (VentaLinea vl : lineasVentaActuales) {
