@@ -219,4 +219,26 @@ public class PrerregistroService {
         pr.setTipoDocumento(pr.getTipoDocumento().trim());
         pr.setNumeroDocumento(pr.getNumeroDocumento().trim());
     }
+    
+    
+    public static Prerregistro obtenerPorDocumento(String tipoDocumento, String numeroDocumento) {
+        try (Connection conn = DBManager.getConnection()) {
+            return PrerregistroDAO.obtenerPorDocumento(conn, tipoDocumento, numeroDocumento);
+        } catch (SQLException e) {
+            throw new DatabaseException("Error al buscar prerregistro por documento", e);
+        }
+    }
+    
+    
+    
+    
 }
+
+
+
+
+
+
+
+
+

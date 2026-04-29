@@ -57,10 +57,10 @@
             </items>
           </Menu>
           <Menu fx:id="menuAyuda" mnemonicParsing="false" text="Ayuda">
-            <items>
-              <MenuItem mnemonicParsing="false" text="About" />
-            </items>
-          </Menu>
+    		<items>
+        		<MenuItem mnemonicParsing="false" onAction="#onAbrirManual" text="Manual de usuario" />
+    		</items>
+		  </Menu>
           <Menu fx:id="menuPerfiles" mnemonicParsing="false"  text="Perfiles">
             <items>
               <MenuItem mnemonicParsing="false" onAction="#onGestionPerfiles" text="Gestionar perfiles" />

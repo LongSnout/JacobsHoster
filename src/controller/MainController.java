@@ -22,8 +22,12 @@ import model.Prerregistro;
 import service.PeregrinoService;
 import service.PrerregistroService;
 import javafx.scene.control.TextArea;
+
+import java.awt.Desktop;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
@@ -1146,9 +1150,21 @@ public class MainController {
 
 	            // Prerregistros pendientes mezclados
 	            PrerregistroService.listarPendientes()
-	                .stream()
-	                .map(ItemLista::new)
-	                .forEach(items::add);
+	            .stream()
+	            
+	            // Se muestran los prerregistros del día seleccionado en el selector de fecha.
+	            // En el futuro, habrái que implementar una ventana para que salgan todos los prerregistros a la vista en pantalla
+	            // y para reservas tambien.
+	            .filter(pr -> {
+	                if (pr.getFechaPrevistaLlegada() == null) return true; // si no tiene fecha, mostrar siempre
+	                try {
+	                    return LocalDate.parse(pr.getFechaPrevistaLlegada()).equals(fechaLista);
+	                } catch (Exception e) {
+	                    return false;
+	                }
+	            })
+	            .map(ItemLista::new)
+	            .forEach(items::add);
 
 	        } else {
 	            PeregrinoService.buscarGlobal(filtro)
@@ -2317,52 +2333,81 @@ public class MainController {
 
 	private void intentarAutorrellenarPorDocumento() {
 
-		String tipo = trim(tfTipoDocumento).toUpperCase();
-		String numero = trim(tfNumeroDocumento).toUpperCase();
+	    String tipo = trim(tfTipoDocumento).toUpperCase();
+	    String numero = trim(tfNumeroDocumento).toUpperCase();
 
-		if (tipo.isBlank() || numero.isBlank())
-			return;
+	    if (tipo.isBlank() || numero.isBlank())
+	        return;
 
-		try {
-			Peregrino existente = PeregrinoService.obtenerPorDocumento(tipo, numero);
+	    try {
+	        Peregrino existente = PeregrinoService.obtenerPorDocumento(tipo, numero);
 
-			if (existente == null) {
-				bloquearDocumentoSiExistente(false);
-				return;
-			}
+	        if (existente == null) {
+	            bloquearDocumentoSiExistente(false);
 
-			// Si ya estamos editando ese mismo peregrino, no hacemos nada extra
-			if (actual != null && actual.getIdPeregrino() == existente.getIdPeregrino()) {
-				bloquearDocumentoSiExistente(true);
-				return;
-			}
+	            // Buscar en prerregistros por documento
+	            try {
+	                Prerregistro pr = PrerregistroService.obtenerPorDocumento(tipo, numero);
+	                if (pr != null) {
+	                    prerregistroActual = pr;
+	                    tfNombre.setText(safe(pr.getNombre()));
+	                    tfApellido1.setText(safe(pr.getApellido1()));
+	                    tfApellido2.setText(safe(pr.getApellido2()));
+	                    tfFechaNacimiento.setText(fechaEsDesdeIso(pr.getFechaNacimiento()));
+	                    tfSexo.setText(safe(pr.getSexo()));
+	                    tfNacionalidad.setText(safe(pr.getNacionalidad()));
+	                    tfPais.setText(safe(pr.getPais()));
+	                    tfCodigoPostal.setText(safe(pr.getCodigoPostal()));
+	                    tfDireccion.setText(safe(pr.getDireccion()));
+	                    tfDireccionComplementaria.setText(safe(pr.getDireccionComplementaria()));
+	                    tfCodigoMunicipio.setText(safe(pr.getCodigoMunicipio()));
+	                    tfNombreMunicipio.setText(safe(pr.getNombreMunicipio()));
+	                    tfTelefono.setText(safe(pr.getTelefono1()));
+	                    tfTelefono2.setText(safe(pr.getTelefono2()));
+	                    tfCorreo.setText(safe(pr.getCorreo()));
+	                    tfParentesco.setText(safe(pr.getParentesco()));
+	                    aplicarReglaMunicipio();
+	                    marcarDocumentoComoAutorrellenado();
+	                }
+	            } catch (Exception e) {
+	                System.out.println("Error al buscar prerregistro por documento: " + e.getMessage());
+	            }
 
-			actual = existente;
+	            return;
+	        }
 
-			tfNombre.setText(safe(existente.getNombre()));
-			tfApellido1.setText(safe(existente.getApellido1()));
-			tfApellido2.setText(safe(existente.getApellido2()));
-			tfFechaNacimiento.setText(fechaEsDesdeIso(existente.getFechaNacimiento()));
-			tfSexo.setText(safe(existente.getSexo()));
-			tfNacionalidad.setText(safe(existente.getNacionalidad()));
-			tfPais.setText(safe(existente.getPais()));
-			tfCodigoPostal.setText(safe(existente.getCodigoPostal()));
-			tfDireccion.setText(safe(existente.getDireccion()));
-			tfDireccionComplementaria.setText(safe(existente.getDireccionComplementaria()));
-			tfCodigoMunicipio.setText(safe(existente.getCodigoMunicipio()));
-			tfNombreMunicipio.setText(safe(existente.getNombreMunicipio()));
-			tfTelefono.setText(safe(existente.getTelefono1()));
-			tfTelefono2.setText(safe(existente.getTelefono2()));
-			tfCorreo.setText(safe(existente.getCorreo()));
-			tfParentesco.setText(safe(existente.getParentesco()));
-			tfSoporteDocumento.setText(safe(existente.getSoporteDocumento()));
+	        // Si ya estamos editando ese mismo peregrino, no hacemos nada extra
+	        if (actual != null && actual.getIdPeregrino() == existente.getIdPeregrino()) {
+	            bloquearDocumentoSiExistente(true);
+	            return;
+	        }
 
-			aplicarReglaMunicipio();
-			marcarDocumentoComoAutorrellenado();
+	        actual = existente;
 
-		} catch (DatabaseException e) {
-			System.out.println(e.getMessage());
-		}
+	        tfNombre.setText(safe(existente.getNombre()));
+	        tfApellido1.setText(safe(existente.getApellido1()));
+	        tfApellido2.setText(safe(existente.getApellido2()));
+	        tfFechaNacimiento.setText(fechaEsDesdeIso(existente.getFechaNacimiento()));
+	        tfSexo.setText(safe(existente.getSexo()));
+	        tfNacionalidad.setText(safe(existente.getNacionalidad()));
+	        tfPais.setText(safe(existente.getPais()));
+	        tfCodigoPostal.setText(safe(existente.getCodigoPostal()));
+	        tfDireccion.setText(safe(existente.getDireccion()));
+	        tfDireccionComplementaria.setText(safe(existente.getDireccionComplementaria()));
+	        tfCodigoMunicipio.setText(safe(existente.getCodigoMunicipio()));
+	        tfNombreMunicipio.setText(safe(existente.getNombreMunicipio()));
+	        tfTelefono.setText(safe(existente.getTelefono1()));
+	        tfTelefono2.setText(safe(existente.getTelefono2()));
+	        tfCorreo.setText(safe(existente.getCorreo()));
+	        tfParentesco.setText(safe(existente.getParentesco()));
+	        tfSoporteDocumento.setText(safe(existente.getSoporteDocumento()));
+
+	        aplicarReglaMunicipio();
+	        marcarDocumentoComoAutorrellenado();
+
+	    } catch (DatabaseException e) {
+	        System.out.println(e.getMessage());
+	    }
 	}
 
 	private void marcarDocumentoComoAutorrellenado() {
@@ -3364,6 +3409,22 @@ public class MainController {
 	        e.printStackTrace();
 	    }
 	}
+	
+	@FXML
+	private void onAbrirManual() {
+	    try {
+	        URL recurso = getClass().getResource("/ui/resources/Manual de usuario.pdf");
+	        if (recurso == null) {
+	            mostrarAlerta("Manual no encontrado", "No se encontró el archivo del manual.");
+	            return;
+	        }
+	        File archivo = new java.io.File(recurso.toURI());
+	        Desktop.getDesktop().open(archivo);
+	    } catch (Exception e) {
+	        mostrarAlerta("Error", "No se pudo abrir el manual: " + e.getMessage());
+	    }
+	}
+	
 	
 	
 	// FUTURO:

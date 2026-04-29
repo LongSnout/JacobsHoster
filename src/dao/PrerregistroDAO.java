@@ -216,6 +216,28 @@ public class PrerregistroDAO {
     }
     
     
+    public static Prerregistro obtenerPorDocumento(Connection conn, String tipoDocumento, String numeroDocumento) throws SQLException {
+        String sql = """
+            SELECT * FROM preregistro
+            WHERE tipo_documento = ? AND numero_documento = ?
+            AND estado_preregistro IN ('PENDIENTE', 'ACEPTADO')
+            ORDER BY fecha_prevista_llegada DESC
+            LIMIT 1
+            """;
+
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, tipoDocumento);
+            ps.setString(2, numeroDocumento);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapear(rs);
+                }
+            }
+        }
+        return null;
+    }
+    
     
     
 }
