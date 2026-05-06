@@ -1,10 +1,12 @@
 package service;
 
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 
+import config.AppConfig;
 import dao.PrerregistroDAO;
 import db.DBManager;
 import exception.DatabaseException;
@@ -81,10 +83,18 @@ public class PrerregistroService {
     }
 
 
+    
+    /*
+     * Recibe los preregistros desde la nube y los inserta en local, evitando duplicados por idPrerregistroNube.
+     * Devuelve el número de preregistros nuevos insertados en local.
+     * Si ocurre cualquier error (API no responde, JSON mal formado, error DB...) se captura la excepción, se muestra un mensaje de error y se devuelve 0.
+     * El estado de los preregistros recibidos siempre se establece como PENDIENTE en local, independientemente del estado que tengan en la nube.
+     * Las fechas se reciben como string en formato ISO (yyyy-MM-dd) o como array de Jackson, pero se guardan como string ISO en local.
+     */
     public static int recibirDesdeNube() {
         try {
-            java.net.URL url = new java.net.URI(
-                config.AppConfig.API_BASE_URL + "/api/prerregistros"
+            URL url = new java.net.URI(
+                AppConfig.API_BASE_URL + "/api/prerregistros"
             ).toURL();
 
             java.net.HttpURLConnection http = (java.net.HttpURLConnection) url.openConnection();
@@ -113,21 +123,29 @@ public class PrerregistroService {
             int insertados = 0;
 
             try (Connection conn = DBManager.getConnection()) {
-                for (int i = 0; i < array.length(); i++) {
-                    org.json.JSONObject obj = array.getJSONObject(i);
+            	for (int i = 0; i < array.length(); i++) {
+            	    org.json.JSONObject obj = array.getJSONObject(i);
 
-                    String idNube = obj.optString("idPrerregistroNube", null);
+            	    System.out.println("[Sync] JSON prerregistro recibido: " + obj.toString());
+            	    System.out.println("[Sync] fechaPrevistaLlegada recibida: "
+            	        + obj.optString("fechaPrevistaLlegada", "NO VIENE"));
+
+            	    String idNube = obj.optString("idPrerregistroNube", null);
                     if (idNube == null || idNube.isBlank()) continue;
 
                     // Evitar duplicados
-                    if (PrerregistroDAO.existePorIdNube(conn, idNube)) continue;
+                    if (PrerregistroDAO.existePorIdNube(conn, idNube)) {
+                        System.out.println("[Sync] Prerregistro ya existe en local. Confirmando en nube: " + idNube);
+                        confirmarRecibidoEnNube(idNube);
+                        continue;
+                    }
 
                     Prerregistro pr = new Prerregistro();
                     pr.setIdPrerregistroNube(idNube);
                     pr.setIdAlbergue(config.AppConfig.ID_ALBERGUE);
                     pr.setEstadoPrerregistro(ESTADO_PENDIENTE); // siempre PENDIENTE en local
 
-                    // Fechas: vienen como string ISO o array Jackson — optString las deja como string
+                 // Las fechas se esperan en formato ISO como texto desde la API. Si no vienen, se asigna la fecha actual
                     pr.setFechaEnvio(obj.optString("fechaEnvio", LocalDate.now().toString()));
                     pr.setFechaPrevistaLlegada(obj.optString("fechaPrevistaLlegada", LocalDate.now().toString()));
 
@@ -157,6 +175,9 @@ public class PrerregistroService {
 
                     PrerregistroDAO.insertar(conn, pr);
                     insertados++;
+                    
+                    confirmarRecibidoEnNube(idNube);
+                    
                 }
             }
 
@@ -166,6 +187,35 @@ public class PrerregistroService {
         } catch (Exception e) {
             System.err.println("[Sync] Error al recibir desde nube: " + e.getMessage());
             return 0;
+        }
+    }
+    
+    
+    private static boolean confirmarRecibidoEnNube(String idPrerregistroNube) {
+        try {
+            URL url = new java.net.URI(
+                AppConfig.API_BASE_URL + "/api/prerregistros/" + idPrerregistroNube + "/procesado"
+            ).toURL();
+
+            java.net.HttpURLConnection http = (java.net.HttpURLConnection) url.openConnection();
+            http.setRequestMethod("PUT");
+            http.setRequestProperty("X-API-KEY", config.AppConfig.API_TOKEN);
+            http.setConnectTimeout(10_000);
+            http.setReadTimeout(15_000);
+
+            int status = http.getResponseCode();
+
+            if (status == 200) {
+                System.out.println("[Sync] Confirmado en nube: " + idPrerregistroNube);
+                return true;
+            } else {
+                System.err.println("[Sync] No se pudo confirmar en nube. Código: " + status);
+                return false;
+            }
+
+        } catch (Exception e) {
+            System.err.println("[Sync] Error confirmando en nube: " + e.getMessage());
+            return false;
         }
     }
 
@@ -193,7 +243,7 @@ public class PrerregistroService {
 
 
         if (pr.getIdAlbergue() == 0) {
-            pr.setIdAlbergue(1);
+            pr.setIdAlbergue(config.AppConfig.ID_ALBERGUE);
         }
 
         if (pr.getEstadoPrerregistro() == null || pr.getEstadoPrerregistro().isBlank()) {

@@ -26,7 +26,7 @@ public class EstanciaService {
         e.setIdEnvioXml(null);
         e.setIdCama(idCama);
 
-        e.setIdAlbergue(1);
+        e.setIdAlbergue(config.AppConfig.ID_ALBERGUE);
         e.setIdPeregrino(idPeregrino);
 
         e.setFechaContrato(null);
@@ -121,7 +121,7 @@ public class EstanciaService {
     }
 
     /**
-     * Inserta o actualiza una estancia.
+     * Inserta o actualiza una estancia, si la estancia es 0 en la DB es que no existe y se inserta, si es diferente de 0 se actualiza.
      * Si id_estancia == 0 -> insertar.
      * Si id_estancia != 0 -> actualizar.
      */
@@ -141,15 +141,9 @@ public class EstanciaService {
             throw new DatabaseException("Error al guardar estancia", ex);
         }
     }
-    /*//al final no se usa este método, se ha hecho con el de EstanciaDAO directamente, pero lo dejo por si acaso
-    public static java.util.List<model.Peregrino> listarPeregrinosPorDia(int idAlbergue, LocalDate fecha) {
-        try (Connection conn = DBManager.getConnection()) {
-        	return PeregrinoDAO.listarPresentesPorDia(conn, idAlbergue, fecha.toString());
-        } catch (SQLException e) {
-            throw new DatabaseException("Error al listar peregrinos por día " + fecha, e);
-        }
-    }
-    */
+
+
+    
     public static List<Peregrino> listarPeregrinosPresentesPorDia(int idAlbergue, LocalDate fecha) {
         try (Connection conn = DBManager.getConnection()) {
             return PeregrinoDAO.listarPresentesPorDia(conn, idAlbergue, fecha.toString());

@@ -261,6 +261,12 @@ public class PeregrinoDAO {
         }
     }
 
+    
+    /**
+     * Lista peregrinos presentes en una fecha concreta.
+     * Incluye también a quienes tienen salida prevista ese mismo día,
+     * porque todavía pueden aparecer en la gestión diaria.
+     */
     public static List<Peregrino> listarPresentesPorDia(Connection conn, int idAlbergue, String fechaISO) throws SQLException {
 
         String sql = """

@@ -233,6 +233,7 @@ public class AlbergueDAO {
         return a;
     }
 
+    // Método para resetear el albergue a valores por defecto que de momento creo que no se usa en ningún sitio, al menos no en la UI, pero lo dejo por si acaso en el futuro...
     public static void resetearAlbergueActual(Connection conn) throws SQLException {
 
         String sql = """
@@ -262,7 +263,7 @@ public class AlbergueDAO {
                 observaciones_apertura = NULL
             WHERE id_albergue = 1
             """;
-
+        						// de momento usamos id_albergue = 1 porque ahora solo se usa un albergue por instalación de app, pero es provisional
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.executeUpdate();
         }

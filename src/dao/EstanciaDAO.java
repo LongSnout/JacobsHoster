@@ -289,6 +289,7 @@ public class EstanciaDAO {
         e.setTipoPago(rs.getString("tipo_pago"));
         e.setTitularPago(rs.getString("titular_pago"));
         e.setCaducidadTarjeta(rs.getString("caducidad_tarjeta"));
+        e.setMedioPago(rs.getString("medio_pago"));
         e.setFechaPago(rs.getString("fecha_pago"));
 
         return e;

@@ -14,7 +14,8 @@ import util.HashUtil;
 public class DBInit {
 	
 	//Esta clase crea la base de datos y tablas la primera vez
-	//que se inicia la app. Si ya existe, no hace nada.
+	//que se inicia la app. Si ya existe, solo comprueba que estén las tablas mínimas
+	//y crea los datos iniciales si faltan.
 
     private DBInit() {}
 
@@ -28,7 +29,6 @@ public class DBInit {
             if (!existenTablasMinimas(conn)) {
                 throw new DatabaseException("La base de datos no tiene las tablas esperadas. ¿Ruta correcta?");
             }
-            asegurarColumnasCama(conn);
 
             // 2) Semilla: albergue
             if (!AlbergueDAO.existeAlbergue(conn)) {
@@ -76,63 +76,6 @@ public class DBInit {
         }
     }
     
-    private static void asegurarColumnasCama(Connection conn) throws Exception {
-        if (!existeColumna(conn, "cama", "numero_cama")) {
-            try (PreparedStatement ps = conn.prepareStatement(
-                    "ALTER TABLE cama ADD COLUMN numero_cama INTEGER")) {
-                ps.executeUpdate();
-            }
-        }
-
-        if (!existeColumna(conn, "cama", "activa")) {
-            try (PreparedStatement ps = conn.prepareStatement(
-                    "ALTER TABLE cama ADD COLUMN activa INTEGER NOT NULL DEFAULT 1")) {
-                ps.executeUpdate();
-            }
-        }
-
-        // Rellenar numero_cama si está vacío
-        try (PreparedStatement ps = conn.prepareStatement("""
-                UPDATE cama
-                SET numero_cama = (
-                    SELECT COUNT(*)
-                    FROM cama c2
-                    WHERE c2.numero_habitacion = cama.numero_habitacion
-                      AND c2.rowid <= cama.rowid
-                )
-                WHERE numero_cama IS NULL
-                """)) {
-            ps.executeUpdate();
-        }
-
-        try (PreparedStatement ps = conn.prepareStatement("""
-                CREATE UNIQUE INDEX IF NOT EXISTS idx_cama_habitacion_numero_cama
-                ON cama (numero_habitacion, numero_cama)
-                """)) {
-            ps.executeUpdate();
-        }
-
-        try (PreparedStatement ps = conn.prepareStatement("""
-                CREATE INDEX IF NOT EXISTS idx_cama_habitacion_activa
-                ON cama (numero_habitacion, activa)
-                """)) {
-            ps.executeUpdate();
-        }
-    }
-
-    private static boolean existeColumna(Connection conn, String tabla, String columna) throws Exception {
-        String sql = "PRAGMA table_info(" + tabla + ")";
-        try (PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
-            while (rs.next()) {
-                String nombre = rs.getString("name");
-                if (columna.equalsIgnoreCase(nombre)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-    }
     
     
     private static boolean crearTablasSiNoExisten(Connection conn) throws Exception {
@@ -386,6 +329,11 @@ public class DBInit {
         
     }
 
+    /**
+	 * Crea triggers para evitar que se asignen estancias solapadas a la misma cama.
+	 * El trigger se activa antes de insertar o actualizar una estancia, y comprueba si hay otra estancia
+	 * para la misma cama que se solape en las fechas. Si es así, aborta la operación con un error.
+	 */
     private static void crearTriggersSiNoExisten(Connection conn) throws Exception {
 
         String triggerInsert = """
@@ -448,13 +396,6 @@ public class DBInit {
         
         
     }
-    
-    
-    
-    
-    
-    
-    
     
     
     

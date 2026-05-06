@@ -151,6 +151,8 @@ public class PrerregistroDAO {
     }
 
 
+    /*  Mapea un ResultSet a un objeto Prerregistro.
+	 */
     private static Prerregistro mapear(ResultSet rs) throws SQLException {
 
         Prerregistro pr = new Prerregistro();
@@ -204,7 +206,9 @@ public class PrerregistroDAO {
         return pr;
     }
     
-    
+    /* 
+     * Verifica si ya existe un preregistro con el mismo id_preregistro_nube.
+	 */
     public static boolean existePorIdNube(Connection conn, String idNube) throws SQLException {
         String sql = "SELECT COUNT(*) FROM preregistro WHERE id_preregistro_nube = ?";
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -215,7 +219,10 @@ public class PrerregistroDAO {
         }
     }
     
-    
+    /*
+     * Obtiene el preregistro más reciente (por fecha prevista de llegada) para un peregrino identificado por tipo y número de documento.
+     * Solo considera preregistros en estado PENDIENTE o ACEPTADO, y devuelve null si no encuentra ninguno.
+     */
     public static Prerregistro obtenerPorDocumento(Connection conn, String tipoDocumento, String numeroDocumento) throws SQLException {
         String sql = """
             SELECT * FROM preregistro

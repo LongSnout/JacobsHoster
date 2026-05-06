@@ -1,5 +1,8 @@
 package main;
 
+import java.io.IOException;
+
+import config.AppConfig;
 import db.DBInit;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -28,7 +31,7 @@ public class MainJH extends Application {
         
         stage.show();
 
-        // Avisar si se creó una BD nueva
+        // Avisa si se creó una BD nueva
         if (bdNueva) {
             Alert alert = new javafx.scene.control.Alert(
                     Alert.AlertType.WARNING);
@@ -37,12 +40,26 @@ public class MainJH extends Application {
             alert.setContentText(
                 "No se encontraron datos previos y se ha creado una base de datos en blanco.\n\n" +
                 "Si tenías datos anteriores, comprueba que el archivo 'jacobs_hoster.db' " +
-                "está en la carpeta 'data/' junto al programa.");
+                "está en la carpeta 'data' en el directorio del programa.");
             alert.showAndWait();
         }
     }
 
     public static void main(String[] args) {
+    	
+    	System.out.println("Versión: " + AppConfig.APP_VERSION);
+    	
+    	
+    	// Crear directorio de datos si no existe
+    	java.nio.file.Path dataDir = java.nio.file.Paths.get(
+    	    System.getProperty("user.home"), "AppData", "Roaming", "JacobsHoster");
+    	try {
+			java.nio.file.Files.createDirectories(dataDir);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	
         bdNueva = DBInit.init();
         launch(args);
     }

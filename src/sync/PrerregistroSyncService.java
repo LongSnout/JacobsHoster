@@ -22,7 +22,7 @@ public class PrerregistroSyncService {
 
         scheduler = Executors.newSingleThreadScheduledExecutor(r -> {
             Thread t = new Thread(r, "prerregistro-sync");
-            t.setDaemon(true);
+            t.setDaemon(true); // Para que no bloquee el cierre de la app
             return t;
         });
 
@@ -42,8 +42,14 @@ public class PrerregistroSyncService {
     }
 
     public static void detener() {
+        if (tarea != null) {
+            tarea.cancel(false);
+            tarea = null;
+        }
+
         if (scheduler != null) {
             scheduler.shutdown();
+            scheduler = null;
             System.out.println("[Sync] Sincronización detenida.");
         }
     }

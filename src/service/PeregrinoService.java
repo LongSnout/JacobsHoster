@@ -21,6 +21,7 @@ public class PeregrinoService {
     /**
      * Guarda un peregrino:
      * Pensado para autoguardado progresivo
+     * Si el peregrino no tiene id (idPeregrino=0) se inserta, si ya tiene id se actualiza
      */
     public static void guardar(Peregrino p) {
 

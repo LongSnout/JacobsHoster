@@ -9,7 +9,10 @@ import java.util.List;
 import exception.DatabaseException;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
 import javafx.scene.chart.CategoryAxis;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
@@ -17,6 +20,8 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.TextField;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import javafx.stage.DirectoryChooser;
+import javafx.stage.Stage;
 import model.Peregrino;
 import model.Prerregistro;
 import service.PeregrinoService;
@@ -35,6 +40,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 import javafx.animation.PauseTransition;
 import javafx.application.Platform;
@@ -50,15 +56,11 @@ import service.AlbergueService;
 import service.CamaService;
 import service.EstanciaService;
 
-import javafx.util.Duration;
-
 import model.Producto;
 import model.VentaLinea;
 import service.ProductoService;
 import service.VentaLineaService;
 import util.ItemLista;
-import javafx.scene.control.cell.TextFieldListCell;
-import javafx.util.StringConverter;
 
 import xml.InformeXMLGenerator;
 import xml.InformeXMLRWriter;
@@ -129,6 +131,7 @@ public class MainController {
     // ===== Widget de ventas =====
     @FXML private javafx.scene.layout.VBox vboxProductos;
     @FXML private Label lblTotalVentas;
+    
     private final List<VentaLinea> lineasVentaActuales = new ArrayList<>();
     
  // ===== Pestaña Ventas =====
@@ -171,7 +174,7 @@ public class MainController {
     @FXML private javafx.scene.chart.PieChart chartSexo;
     @FXML private javafx.scene.chart.BarChart<String, Number> chartPais;
     @FXML private javafx.scene.chart.BarChart<String, Number> chartEdad;
-    private int anioActual = java.time.LocalDate.now().getYear();
+    
     
     
     // ===== Estado interno =====
@@ -182,6 +185,7 @@ public class MainController {
     private String documentoOriginalTipo = "";
     private String documentoOriginalNumero = "";
     private Prerregistro prerregistroActual = null;
+    private int anioActual = java.time.LocalDate.now().getYear();
 
     // ===== Datos previos (copiar al siguiente registro) =====
     private String previoNacionalidad      = "";
@@ -197,21 +201,22 @@ public class MainController {
     private String previoTelefono          = "";
     private String previoReferenciaGrupo   = "";
 
-    // ===== Constantes =====
+    
+    
     private static final DateTimeFormatter FECHA_HORA = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
-    private static final java.util.Set<String> TIPOS_PAGO_VALIDOS = java.util.Set.of(
+    private static final Set<String> TIPOS_PAGO_VALIDOS = Set.of(
             "DESTI", "EFECT", "TARJT", "PLATF", "TRANS", "MOVIL", "TREG", "OTRO"
     );
 
-    private static final java.util.Set<String> PARENTESCOS_VALIDOS = java.util.Set.of(
+    private static final Set<String> PARENTESCOS_VALIDOS = Set.of(
             "AB", "BA", "BN", "CY", "CD", "HR", "HJ", "PM", "NI", "SB", "SG", "TI", "YN", "TU", "OT"
     );
 
 	@FXML
 	private void initialize() {
 
-		configurarListView();
+		configurarListView(); // este es el widget de la lista de la izquierda donde salen los peregrinos del día
 
 		fechaLista = LocalDate.now();
 		dpFechaLista.setValue(fechaLista);
@@ -509,6 +514,28 @@ public class MainController {
 	        tfRol.setText(safe(pr.getRol()));
 	        tfSoporteDocumento.setText(""); // no viene en prerregistro
 
+	        // Usar la fecha prevista del prerregistro como fecha de entrada
+	        String fechaLlegada = safe(pr.getFechaPrevistaLlegada());
+
+	        if (!fechaLlegada.isBlank()) {
+	            tfFechaEntrada.setText(fechaEsDesdeIso(fechaLlegada));
+
+	            try {
+	                LocalDate entrada = LocalDate.parse(fechaLlegada);
+	                tfFechaSalida.setText(entrada.plusDays(1).format(FECHA_ES));
+
+	                if (estanciaActual == null) {
+	                    estanciaActual = new Estancia();
+	                }
+
+	                estanciaActual.setFechaEntrada(entrada.toString());
+	                estanciaActual.setFechaSalidaPrevista(entrada.plusDays(1).toString());
+
+	            } catch (Exception e) {
+	                System.out.println("No se pudo aplicar fecha prevista del prerregistro: " + e.getMessage());
+	            }
+	        }
+
 	        aplicarReglaMunicipio();
 	        marcarError(tfCodigoMunicipio, false);
 	        marcarError(tfNombreMunicipio, false);
@@ -540,7 +567,6 @@ public class MainController {
 		normalizarCampoFecha(tfFechaNacimiento);
 		normalizarCampoFecha(tfFechaPago);
 		normalizarCampoFecha(tfFechaContrato);
-		normalizarCampoFecha(tfFechaPago);
 		
 		tfRol.setText(trim(tfRol).toUpperCase());
 		tfParentesco.setText(trim(tfParentesco).toUpperCase());
@@ -564,19 +590,21 @@ public class MainController {
 		validarCaducidadTarjeta();
 		validarRol();
 
-		// Bloqueo por aforo, solo para estancias nuevas
+		// Bloqueo por aforo. solo para estancias nuevas
 		LocalDate fechaControl = parseFechaFlexible(tfFechaEntrada.getText());
 		if (fechaControl == null) {
 			fechaControl = LocalDate.now();
 		}
 		
 		if (esEstanciaNueva()) {
-			int ocupadas = EstanciaService.contarPlazasOcupadasEnFecha(1, fechaControl);
+			int ocupadas = EstanciaService.contarPlazasOcupadasEnFecha(config.AppConfig.ID_ALBERGUE, fechaControl);
 			int totales = CamaService.contarCapacidadTotal();
 
 			if (totales > 0 && ocupadas >= totales) {
 				System.out.println(
 						"Aforo completo para la fecha " + fechaControl + ": no se pueden añadir más huéspedes.");
+				// TODO: mostrar mensaje al usuario de que no se pueden añadir más huéspedes para esa fecha, con opción a forzar el registro.
+				// se podría usar este método: mostrarAlerta()
 				return;
 			}
 		}
@@ -584,6 +612,8 @@ public class MainController {
 		try {
 			
 			// Si cambió el documento, eliminar el peregrino anterior
+			// TODO: Revisar esta lógica, porque si el peregrino ya tenía estancias asociadas, al eliminarlo se pierden esas estancias. Igual es mejor no eliminar o no se. Pero de momento así queda.
+			
 			String tipoActual = trim(tfTipoDocumento).toUpperCase();
 			String numeroActual = trim(tfNumeroDocumento).toUpperCase();
 
@@ -596,7 +626,7 @@ public class MainController {
 			        PeregrinoService.eliminar(actual.getIdPeregrino());
 			        actual = new Peregrino();
 			        estanciaActual = new Estancia();
-			        estanciaActual.setIdAlbergue(1);
+			        estanciaActual.setIdAlbergue(config.AppConfig.ID_ALBERGUE);
 			        estanciaActual.setEstadoEstancia("ACTIVA");
 			    } catch (DatabaseException e) {
 			        System.out.println("Error al eliminar peregrino anterior: " + e.getMessage());
@@ -862,6 +892,10 @@ public class MainController {
 			priorizar grupos juntos
 			intentar llenar habitaciones completas si conviene
 			opcionalmente minimizar número de habitaciones abiertas*/
+			// Pero bueno, esto tampoco es prioritario, estaría guay peor es complicado hacerlo bien, incliso si se pudiera meter una IA en local para asignar esto ya sería la leche,
+			// así como idea para el futuro XD
+			
+			
 		}
 		// Caso 2: ambos rellenos -> intentar reasignar
 		else if (!txtHab.isBlank() && !txtCama.isBlank()) {
@@ -882,7 +916,7 @@ public class MainController {
 				// Si meten texto raro, tampoco machacamos la cama existente
 			}
 		}
-		// Caso 3: uno relleno y otro no -> no tocar la cama existente
+		// Caso 3: si uno relleno y otro no, no tocar la cama existente
 		else {
 			// Incompleto: no hacemos nada para no romper asignaciones previas
 			// Más adelante aquí se puede marcar error visual
@@ -1021,7 +1055,7 @@ public class MainController {
 	        List<Estancia> estancias = new ArrayList<>();
 	        List<Peregrino> peregrinos = new ArrayList<>();
 
-	        List<Peregrino> todosDelDia = EstanciaService.listarPeregrinosPresentesPorDia(1, fechaLista);
+	        List<Peregrino> todosDelDia = EstanciaService.listarPeregrinosPresentesPorDia(config.AppConfig.ID_ALBERGUE, fechaLista);
 
 	        for (Peregrino p : todosDelDia) {
 	            Estancia e = EstanciaService.buscarPorPeregrinoYFecha(p.getIdPeregrino(), fechaLista);
@@ -1074,14 +1108,14 @@ public class MainController {
 
 	@FXML
 	private void onAjustarCarpetaXML() {
-	    javafx.stage.DirectoryChooser chooser = new javafx.stage.DirectoryChooser();
+	    DirectoryChooser chooser = new DirectoryChooser();
 	    chooser.setTitle("Seleccionar carpeta para XMLs del Ministerio");
 
 	    java.io.File dirActual = new java.io.File(config.AppConfig.XML_OUTPUT_DIR);
 	    if (dirActual.exists()) chooser.setInitialDirectory(dirActual);
 
-	    javafx.stage.Stage stage = (javafx.stage.Stage) tabPane.getScene().getWindow();
-	    java.io.File seleccionada = chooser.showDialog(stage);
+	    Stage stage = (javafx.stage.Stage) tabPane.getScene().getWindow();
+	    File seleccionada = chooser.showDialog(stage);
 
 	    if (seleccionada != null) {
 	        config.AppConfig.XML_OUTPUT_DIR = seleccionada.getAbsolutePath();
@@ -1092,7 +1126,7 @@ public class MainController {
 
 	private void mostrarAlerta(String titulo, String mensaje) {
 	    javafx.scene.control.Alert alert =
-	        new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
+	        new Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
 	    alert.setTitle(titulo);
 	    alert.setHeaderText(null);
 	    alert.setContentText(mensaje);
@@ -1139,38 +1173,64 @@ public class MainController {
 	    try {
 	        String filtro = trim(tfBuscarHuesped);
 
-	        List<ItemLista> items = new java.util.ArrayList<>();
+	        List<ItemLista> items = new ArrayList<>();
 
 	        if (filtro.isBlank()) {
+
 	            // Peregrinos del día
-	            EstanciaService.listarPeregrinosPresentesPorDia(1, fechaLista)
-	                .stream()
-	                .map(ItemLista::new)
-	                .forEach(items::add);
+	            List<Peregrino> listaPeregrinos = EstanciaService.listarPeregrinosPresentesPorDia(config.AppConfig.ID_ALBERGUE, fechaLista);
 
-	            // Prerregistros pendientes mezclados
-	            PrerregistroService.listarPendientes()
-	            .stream()
+	            for (Peregrino p : listaPeregrinos) {
+	                ItemLista item = new ItemLista(p);
+	                items.add(item);
+	            }
+
 	            
-	            // Se muestran los prerregistros del día seleccionado en el selector de fecha.
-	            // En el futuro, habrái que implementar una ventana para que salgan todos los prerregistros a la vista en pantalla
-	            // y para reservas tambien.
-	            .filter(pr -> {
-	                if (pr.getFechaPrevistaLlegada() == null) return true; // si no tiene fecha, mostrar siempre
-	                try {
-	                    return LocalDate.parse(pr.getFechaPrevistaLlegada()).equals(fechaLista);
-	                } catch (Exception e) {
-	                    return false;
-	                }
-	            })
-	            .map(ItemLista::new)
-	            .forEach(items::add);
+	            
+	         // Prerregistros pendientes: se muestran siempre, sin filtrar por fecha
+	            List<Prerregistro> listaPrerregistros = PrerregistroService.listarPendientes();
 
+	            for (Prerregistro pr : listaPrerregistros) {
+	                ItemLista item = new ItemLista(pr);
+	                items.add(item);
+	            }
+	            
+	            
+	            /*
+	            // Prerregistros pendientes del día seleccionado
+	            List<Prerregistro> listaPrerregistros = PrerregistroService.listarPendientes();
+
+	            for (Prerregistro pr : listaPrerregistros) {
+
+	                boolean mostrar = false;
+
+	                if (pr.getFechaPrevistaLlegada() == null) {
+	                    mostrar = true;
+	                } else {
+	                    try {
+	                        LocalDate fechaPrerregistro = LocalDate.parse(pr.getFechaPrevistaLlegada());
+	                        mostrar = fechaPrerregistro.equals(fechaLista);
+	                    } catch (Exception e) {
+	                        mostrar = false;
+	                    }
+	                }
+
+	                if (mostrar) {
+	                    ItemLista item = new ItemLista(pr);
+	                    items.add(item);
+	                }
+	            }
+	            */
+	            
 	        } else {
-	            PeregrinoService.buscarGlobal(filtro)
-	                .stream()
-	                .map(ItemLista::new)
-	                .forEach(items::add);
+
+	            // Búsqueda global de peregrinos
+	            List<Peregrino> resultados = PeregrinoService.buscarGlobal(filtro);
+
+	            for (Peregrino p : resultados) {
+	                ItemLista item = new ItemLista(p);
+	                items.add(item);
+	            }
 	        }
 
 	        lvHuespedes.setItems(FXCollections.observableArrayList(items));
@@ -1184,26 +1244,6 @@ public class MainController {
 	    refrescarIndicadorPlazas();
 	    cargarGruposExistentes();
 	}
-
-	/*
-	 * private void refrescarLista() { try { List<Peregrino> lista =
-	 * EstanciaService.listarPeregrinosPorDia(1, fechaLista);
-	 * 
-	 * String filtro = trim(tfBuscarHuesped).toUpperCase();
-	 * 
-	 * if (!filtro.isBlank()) { lista = lista.stream() .filter(p ->
-	 * coincideBusqueda(p, filtro)) .toList(); }
-	 * 
-	 * lvHuespedes.setItems(FXCollections.observableArrayList(lista));
-	 * 
-	 * } catch (DatabaseException e) { System.out.println(e.getMessage());
-	 * e.printStackTrace();
-	 * lvHuespedes.setItems(FXCollections.observableArrayList()); } }
-	 */
-
-	// ------------------------------------------------------
-	// Validación suave (no bloquea)
-
 
 	private void instalarValidacionSuave() {
 
@@ -1234,8 +1274,7 @@ public class MainController {
 			}
 		});
 
-		// País: al perder foco, si escribieron "ESPAÑA" (o parecido), lo convierte a
-		// ISO3
+		// País: al perder foco, si escribieron "ESPAÑA" (o parecido), lo convierte a ISO3
 		tfPais.focusedProperty().addListener((obs, was, isNow) -> {
 			if (!isNow) {
 				Pais p = buscarPaisMejorCoincidencia(trim(tfPais));
@@ -1264,12 +1303,12 @@ public class MainController {
 	@FXML
 	private void onNuevoAlbergue() {
 		try {
-			javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+			FXMLLoader loader = new FXMLLoader(
 					getClass().getResource("/ui/nuevo_albergue.fxml"));
 
-			javafx.scene.Scene scene = new javafx.scene.Scene(loader.load());
+			Scene scene = new Scene(loader.load());
 
-			javafx.stage.Stage stage = new javafx.stage.Stage();
+			Stage stage = new Stage();
 			stage.setTitle("Nuevo albergue");
 			stage.setScene(scene);
 			stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
@@ -1416,7 +1455,7 @@ public class MainController {
 		String pais = trim(tfPais).toUpperCase();
 		boolean esEsp = "ESP".equals(pais);
 
-		// Solo ocultamos el campo
+		// Solo oculta el campo
 		tfCodigoMunicipio.setVisible(esEsp);
 		tfCodigoMunicipio.setManaged(esEsp);
 
@@ -2162,7 +2201,7 @@ public class MainController {
 				estanciaActual = new Estancia();
 				estanciaActual.setIdPeregrino(p.getIdPeregrino());
 				// idAlbergue obligatorio: si solo hay uno, puedes poner 1.
-				estanciaActual.setIdAlbergue(1);
+				estanciaActual.setIdAlbergue(config.AppConfig.ID_ALBERGUE);
 			}
 
 			tfReferencia.setText(safe(estanciaActual.getReferenciaContrato()));
