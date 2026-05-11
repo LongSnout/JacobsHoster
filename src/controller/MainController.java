@@ -417,7 +417,11 @@ public class MainController {
 	            } else if (nuevoHoy) {
 	                punto.setText("● ");
 	                punto.setStyle("-fx-fill: #1f6f3e;"); // verde
-	                texto.setStyle("-fx-fill: -fx-text-inner-color;");
+	                if (invalido) {
+	                    texto.setStyle("-fx-fill: #d97917;");
+	                } else {
+	                    texto.setStyle("-fx-fill: -fx-text-inner-color;");
+	                }
 	            } else {
 	                punto.setText("");
 	                if (invalido) {
@@ -483,6 +487,7 @@ public class MainController {
 	    } finally {
 	        cargandoFicha = false;
 	    }
+	    ejecutarValidacionesSuaves();
 	}
 
 	private void cargarEnFichaDesdePrerregistro(Prerregistro pr) {
@@ -543,6 +548,7 @@ public class MainController {
 	    } finally {
 	        cargandoFicha = false;
 	    }
+	    ejecutarValidacionesSuaves();
 	}
 
 
@@ -571,24 +577,10 @@ public class MainController {
 		tfRol.setText(trim(tfRol).toUpperCase());
 		tfParentesco.setText(trim(tfParentesco).toUpperCase());
 
-		LocalDate fn = parseFechaFlexible(tfFechaNacimiento.getText());
-		if (fn != null && fn.isAfter(LocalDate.now())) {
-			marcarError(tfFechaNacimiento, true);
-		} else {
-			marcarError(tfFechaNacimiento, false);
-		}
+		validarFechaNacimiento();
 
 		// validaciones suaves (solo pinta naranja)
-		validarTipoDocumento();
-		validarNumeroDocumentoConTipo();
-		validarSexo();
-		validarIso3(tfNacionalidad);
-		validarIso3(tfPais);
-		validarMunicipioSegunPaisSoloCampos();
-		validarTipoPago();
-		validarParentesco();
-		validarCaducidadTarjeta();
-		validarRol();
+		ejecutarValidacionesSuaves();
 
 		// Bloqueo por aforo. solo para estancias nuevas
 		LocalDate fechaControl = parseFechaFlexible(tfFechaEntrada.getText());
@@ -762,7 +754,10 @@ public class MainController {
 		actual.setNombre(trim(tfNombre));
 		actual.setApellido1(trim(tfApellido1));
 		actual.setApellido2(trim(tfApellido2));
-		actual.setFechaNacimiento(fechaIsoDesdeCampo(tfFechaNacimiento));
+		{
+			LocalDate _fn = parseFechaFlexible(tfFechaNacimiento.getText());
+			actual.setFechaNacimiento(_fn != null ? _fn.toString() : trim(tfFechaNacimiento));
+		}
 		actual.setSexo(trim(tfSexo));
 		actual.setNacionalidad(trim(tfNacionalidad));
 		actual.setPais(trim(tfPais));
@@ -1000,6 +995,16 @@ public class MainController {
 
 			marcarError(tfCodigoMunicipio, false);
 			marcarError(tfNombreMunicipio, false);
+			marcarError(tfTipoDocumento, false);
+			marcarError(tfNumeroDocumento, false);
+			marcarError(tfSexo, false);
+			marcarError(tfNacionalidad, false);
+			marcarError(tfPais, false);
+			marcarError(tfFechaNacimiento, false);
+			marcarError(tfTipoPago, false);
+			marcarError(tfParentesco, false);
+			marcarError(tfCaducidadTarjeta, false);
+			marcarError(tfRol, false);
 			lineasVentaActuales.clear();
 			
 			// Añadir línea de estancia por defecto si hay tarifa activa
@@ -1464,6 +1469,34 @@ public class MainController {
 	}
 
 	// --------------------------
+	// Validaciones suaves
+	// --------------------------
+
+	private boolean validarFechaNacimiento() {
+		LocalDate fn = parseFechaFlexible(tfFechaNacimiento.getText());
+		if (fn == null || fn.isAfter(LocalDate.now())) {
+			marcarError(tfFechaNacimiento, true);
+			return false;
+		}
+		marcarError(tfFechaNacimiento, false);
+		return true;
+	}
+
+	private void ejecutarValidacionesSuaves() {
+		validarFechaNacimiento();
+		validarTipoDocumento();
+		validarNumeroDocumentoConTipo();
+		validarSexo();
+		validarIso3(tfNacionalidad);
+		validarIso3(tfPais);
+		validarMunicipioSegunPaisSoloCampos();
+		validarTipoPago();
+		validarParentesco();
+		validarCaducidadTarjeta();
+		validarRol();
+	}
+
+	// --------------------------
 	// Perfil naranja en lista
 	// --------------------------
 
@@ -1495,6 +1528,10 @@ public class MainController {
 			if (nom.isBlank())
 				return true;
 		}
+
+		LocalDate fn = parseFechaFlexible(safe(p.getFechaNacimiento())); // blank=null=error
+		if (fn == null || fn.isAfter(LocalDate.now()))
+			return true;
 
 		return false;
 	}
@@ -2172,11 +2209,7 @@ public class MainController {
 		tfFechaNacimiento.focusedProperty().addListener((obs, wasFocused, isFocused) -> {
 			if (!isFocused) {
 				normalizarCampoFecha(tfFechaNacimiento);
-
-				LocalDate fn = parseFechaFlexible(tfFechaNacimiento.getText());
-				if (fn != null && fn.isAfter(LocalDate.now())) {
-					marcarError(tfFechaNacimiento, true);
-				}
+				validarFechaNacimiento();
 			}
 		});
 	}
@@ -3205,6 +3238,10 @@ public class MainController {
 
 	        String id = safe(p.getNombre()) + " " + safe(p.getApellido1());
 	        if (id.isBlank()) id = "Peregrino #" + (i + 1);
+
+	        // Bloquear si el peregrino aparece en naranja (misma lógica que la lista)
+	        if (peregrinoTieneErrores(p))
+	            errores.add(id + ": tiene datos con formato incorrecto (aparece marcado en naranja)");
 
 	        // Campos obligatorios persona
 	        if (safe(p.getNombre()).isBlank())

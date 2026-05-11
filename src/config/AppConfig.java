@@ -83,7 +83,7 @@ public class AppConfig {
 
     
     
-    // Ruta donde se guardan los XMLs del Ministerio
+    // Ruta donde se guardan los XMLs del Ministerio, ahora en el escritorio, porque donde los guardaba antes güindos no deja si ejecutar como admin o qué se yo
     // Se puede cambiar desde la interfaz de usuario en Edición, en la menu bar
     public static String XML_OUTPUT_DIR =
     	    System.getProperty("user.home")
